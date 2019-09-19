@@ -11,10 +11,13 @@ export class Game {
     constructor() {
 
         // ...
+
+        this.angle = 0;
     }
 
 
     // Initialize the scene
+    // (or the things that need assets, really)
     init(ev) {
 
         // ...
@@ -25,6 +28,9 @@ export class Game {
     update(ev) {
 
         // ...
+
+        this.angle += 0.05 * ev.step;
+        this.angle %= Math.PI * 2;
     }
 
 
@@ -33,8 +39,19 @@ export class Game {
 
         c.clear(0.70, 0.70, 0.70);
 
+        c.setView2D(c.w, c.h);
+        c.loadIdentity();
+        c.useTransform();
+
+        c.push();
+        c.translate(160, 120);
+        c.rotate(this.angle, 0, 0, 1);
+        c.useTransform();
+
         c.setColor(1, 0, 0, 1);
-        c.fillRect(-3.0/8.0, -0.5, 3.0/4.0, 1);
+        c.fillRect(-32, -32, 64, 64);
+
+        c.pop();
     }
 
 }

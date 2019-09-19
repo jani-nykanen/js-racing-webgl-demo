@@ -1,6 +1,7 @@
 import { Shader } from "./shader.js";
 import { VertexNoTex, FragNoTex, VertexDefault, FragTex, FragFogAndLight } from "./shadersrc.js";
 import { Mesh } from "./mesh.js";
+import { Transformations } from "./transform.js";
 
 //
 // Canvas
@@ -13,10 +14,12 @@ import { Mesh } from "./mesh.js";
 //
 
 
-export class Canvas {
+export class Canvas extends Transformations {
 
 
     constructor(w, h) {
+
+        super();
 
         this.canvas = null;
         this.gl = null;
