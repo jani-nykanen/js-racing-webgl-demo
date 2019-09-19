@@ -33,7 +33,8 @@ export class Game {
 
         c.clear(0.70, 0.70, 0.70);
 
-        
+        c.setColor(1, 0, 0, 1);
+        c.fillRect(-3.0/8.0, -0.5, 3.0/4.0, 1);
     }
 
 }

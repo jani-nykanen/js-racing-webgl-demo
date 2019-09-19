@@ -1,3 +1,7 @@
+import { Shader } from "./shader.js";
+import { VertexNoTex, FragNoTex, VertexDefault, FragTex, FragFogAndLight } from "./shadersrc.js";
+import { Mesh } from "./mesh.js";
+
 //
 // Canvas
 // Not Html5 canvas (although this class
@@ -26,6 +30,58 @@ export class Canvas {
 
         // Black screen by default
         this.clear(0, 0, 0);
+
+        // Build shaders & set the default shader
+        this.shaders = this.buildShaders();  
+        this.activeShader = this.shaders.noTex;
+        this.activeShader.use();
+
+        this.mRect = this.createRectMesh();
+    }
+
+
+    // Create a rectangle mesh for
+    // 2D rendering
+    createRectMesh() {
+
+        return new Mesh(
+            this.gl,
+            [0, 0, 0,
+             1, 0, 0,
+             1, 1, 0,
+             0, 1, 0
+            ],
+            [0, 0,
+             1, 0,
+             1, 1,
+             0, 1
+            ],
+            [0, 0, 1,
+             0, 0, 1,
+             0, 0, 1,
+             0, 0, 1
+            ],
+            [0, 1, 2, 
+             2, 3, 0
+            ],
+        );
+    }
+
+
+    // Build all the required shaders
+    buildShaders() {
+
+        let gl = this.gl;
+
+        let shaders = [];
+        shaders.noTex = new Shader(gl,
+            VertexNoTex, FragNoTex);
+        shaders.tex = new Shader(gl,
+            VertexDefault, FragTex);
+        shaders.fogAndLight = new Shader(gl,
+            VertexDefault, FragFogAndLight);
+
+        return shaders;
     }
 
 
@@ -115,5 +171,25 @@ export class Canvas {
 
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
         gl.clearColor(r, g, b, 1.0);
+    }
+
+
+    // Set global rendering color
+    setColor(r, g, b, a) {
+
+        this.activeShader.setColor(
+            r, g, b, a
+        );
+    }
+
+
+    // Draw a filled rectangle
+    fillRect(x, y, w, h) {
+
+        this.activeShader.setVertexTransform(
+            x, y, 0, w, h, 0
+        );
+        this.mRect.bind(this.gl);
+        this.mRect.draw(this.gl);
     }
 }
