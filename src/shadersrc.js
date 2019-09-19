@@ -114,11 +114,11 @@ void main() {
     tex.y *= texSize.y;
     tex += texPos;
 
-    vec4 res = texture2D(t0, tex);
+    vec4 res = texture2D(t0, tex) * color;
     if(color.a <= DELTA) {
         discard;
     }
-    gl_FragColor = color;
+    gl_FragColor = res;
 }
 `
 export const FragNoTex = 

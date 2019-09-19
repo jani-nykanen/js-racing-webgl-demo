@@ -39,19 +39,33 @@ export class Game {
 
         c.clear(0.70, 0.70, 0.70);
 
-        c.setView2D(c.w, c.h);
+        // Start 3D rendering
+        c.toggleDepthTest(true);
+        c.setPerspective(70.0, c.w / c.h, 0.1, 100.0);
+        c.setCamera(0, 0, -1, 0, 0, 0);
         c.loadIdentity();
         c.useTransform();
 
         c.push();
-        c.translate(160, 120);
-        c.rotate(this.angle, 0, 0, 1);
+        c.translate(0, 0, 0);
+        c.rotate(this.angle, 1, 0.5, 1);
         c.useTransform();
 
-        c.setColor(1, 0, 0, 1);
-        c.fillRect(-32, -32, 64, 64);
+        c.setColor(1, 1, 1, 1);
+        c.drawTexture(c.textures.test,
+            -0.5, -0.5, 1, 1);
 
+        
         c.pop();
+
+        // Start 2D rendering
+        c.toggleDepthTest(false);
+        c.setView2D(c.w, c.h);
+        c.useTransform();
+
+        c.setColor(0);
+        c.drawText(c.textures.font, "HELLO WORLD",
+            2, 2, -1, 0);
     }
 
 }

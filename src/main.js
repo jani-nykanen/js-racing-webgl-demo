@@ -18,5 +18,11 @@ window.onload = () => {
     // Add scenes
     c.addScenes(new Game());
 
+    // Set assets loading
+    c.assets.addTextures(
+        {name: "test", src: "assets/bitmaps/test.png"},
+        {name: "font", src: "assets/bitmaps/font.png"},
+    );
+
     c.run();
 }

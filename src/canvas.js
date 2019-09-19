@@ -40,6 +40,11 @@ export class Canvas extends Transformations {
         this.activeShader.use();
 
         this.mRect = this.createRectMesh();
+
+        // Store previously bounded objects to
+        // reduce WebGL calls
+        this.boundMesh = null;
+        this.boundTex = null;
     }
 
 
@@ -102,7 +107,11 @@ export class Canvas extends Transformations {
 
         this.canvas.setAttribute(
             "style", 
-            "position: absolute; top: 0; left: 0; z-index: -1");
+            "position: absolute; top: 0; left: 0; z-index: -1;" + 
+            "image-rendering: optimizeSpeed;" + 
+            "image-rendering: pixelated;" +
+            "image-rendering: -moz-crisp-edges;"
+            );
         cdiv.appendChild(this.canvas);
         document.body.appendChild(cdiv);
 
@@ -167,6 +176,28 @@ export class Canvas extends Transformations {
     }
 
 
+    // Bind a mesh, if not already bound
+    bindMesh(m) {
+
+        if (m != this.boundMesh) {
+
+            this.boundMesh = m;
+            m.bind(this.gl);
+        }
+    }
+
+
+    // Bind a texture, if not already bound
+    bindTexture(t) {
+
+        if (t != this.boundTex) {
+
+            this.boundTex = t;
+            t.bind(this.gl);
+        }
+    }
+
+
     // Clear screen with a color
     clear(r, g, b) {
 
@@ -180,6 +211,17 @@ export class Canvas extends Transformations {
     // Set global rendering color
     setColor(r, g, b, a) {
 
+        if (r == null) {
+
+            r = 1; g = 1; b = 1;
+        }
+        else if (g == null) {
+
+            g = r; b = r;
+        }
+
+        if (a == null) a = 1.0;
+
         this.activeShader.setColor(
             r, g, b, a
         );
@@ -189,10 +231,125 @@ export class Canvas extends Transformations {
     // Draw a filled rectangle
     fillRect(x, y, w, h) {
 
+        // Set to the correct shader
+        if (this.activeShader != this.shaders.noTex) {
+
+            this.activeShader = this.shaders.noTex;
+            this.activeShader.use();
+        }
+
         this.activeShader.setVertexTransform(
             x, y, 0, w, h, 0
         );
-        this.mRect.bind(this.gl);
+        
+        this.bindMesh(this.mRect);
         this.mRect.draw(this.gl);
+    }
+
+
+    // Draw a texture
+    drawTexture(tex, dx, dy, dw, dh) {
+
+        this.drawTextureRegion(tex, 0, 0, tex.w, tex.h,
+            dx, dy, dw, dh);
+    }
+
+
+    // Draw a texture region
+    drawTextureRegion(tex, sx, sy, sw, sh, dx, dy, dw, dh) {
+
+        if (dw == null) dw = sw;
+        if (dh == null) dh = sh;
+
+        if (dw < 0) {
+
+            dx -= dw;
+        }
+        if (dh < 0) {
+
+            dy -= dh;
+        }
+
+        // Set the correct shader
+        if (this.activeShader == this.shaders.noTex) {
+
+            this.activeShader = this.shaders.tex;
+            this.activeShader.use();
+        }
+
+        this.activeShader.setVertexTransform(
+            dx, dy, 0, 
+            dw, dh, 0);
+        this.activeShader.setFragTransform(
+            sx/tex.w, sy/tex.h, 
+            sw/tex.w, sh/tex.h);
+
+        this.bindMesh(this.mRect);
+        this.bindTexture(tex);
+
+        this.mRect.draw(this.gl);
+    }
+
+
+    // Draw text (not scaled)
+    drawText(font, str, dx, dy, xoff, yoff, center) {
+
+        let s = font.w/16;
+
+        this.drawScaledText(
+            font, str, dx, dy, xoff, yoff, s, s, center);
+    }
+
+
+    // Draw scaled text
+    drawScaledText(font, str, dx, dy, xoff, yoff, sx, sy, center) {
+
+        let cw = font.w / 16;
+        let ch = cw;
+
+        let x = dx;
+        let y = dy;
+        let c;
+
+        // "Uniform scaling"
+        let usx = sx / cw;
+        let usy = sy / cw;
+
+        if (center) {
+
+            dx -= (str.length * (cw + xoff) * usx)/ 2.0 ;
+            x = dx;
+        }
+
+        // Draw every character
+        for (let i = 0; i < str.length; ++ i) {
+
+            c = str.charCodeAt(i);
+            if (c == '\n'.charCodeAt(0)) {
+
+                x = dx;
+                y += (ch + yoff) * usy;
+                continue;
+            }
+
+            // Draw current character
+            this.drawTextureRegion(
+                font, 
+                (c % 16) * cw, ((c/16)|0) * ch,
+                cw, ch, x, y, sx, sy
+            );
+
+            x += (cw + xoff) * usx;
+        }
+    }
+
+
+    // Toggle depth test
+    toggleDepthTest(state) {
+
+        if (state)
+            this.gl.enable(this.gl.DEPTH_TEST);
+        else
+            this.gl.disable(this.gl.DEPTH_TEST);
     }
 }

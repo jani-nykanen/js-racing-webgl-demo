@@ -1,5 +1,6 @@
 import { FrameEvent } from "./event.js";
 import { Canvas } from "./canvas.js";
+import { AssetLoader } from "./assets.js";
 
 //
 // Game core
@@ -20,10 +21,17 @@ export class Core {
         this.canvasHeight = this.getConfParam(config,
             "canvasHeight", 240);   
 
-        // Create components
+        // Create components 
         this.ev = new FrameEvent();
         this.canvas = new Canvas(this.canvasWidth, 
                                  this.canvasHeight);
+        this.assets = new AssetLoader(this.canvas.gl);
+
+        // Store references to certain assets
+        // (we will undefine the first reference after
+        // the initialization)
+        this.ev.textures = this.assets.textures;
+        this.canvas.textures = this.assets.textures;
 
         // Compute required values
         this.ev.step = 60.0 / this.frameRate;
@@ -79,8 +87,11 @@ export class Core {
         // Update game logic
         while ( (loopCount --) > 0) {
 
-            // Update frame event
-            this.ev.update();
+            if (this.assets.hasLoaded()) {
+
+                // Update frame event
+                this.ev.update();
+            }
 
             this.timeSum -= this.target;
             redraw = true;
@@ -89,7 +100,10 @@ export class Core {
         // (Re)draw the scene
         if (redraw) {
 
-            this.ev.drawScene(this.canvas);
+            if (this.assets.hasLoaded()) {
+                
+                this.ev.drawScene(this.canvas);
+            }
         }
 
         this.oldTime = ts;
@@ -119,6 +133,8 @@ export class Core {
 
         // Initialize scenes
         this.ev.initScenes();
+        // No need for this any longer
+        this.ev.textures = null;
 
         // Start the main loop
         this.loop(0);

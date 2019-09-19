@@ -68,7 +68,10 @@ export class Transformations {
     // Rotate
     rotate(angle, x, y, z) {
 
-        if (z == null) z = 0;
+        if (x == null) {
+
+            x = 0; y = 0; z = 1;
+        }
 
         glMatrix.mat4.rotate(
             this.model, this.model, angle,
@@ -102,6 +105,7 @@ export class Transformations {
 
         glMatrix.mat4.ortho(this.projection,
             0, w, h, 0, -1, 1);
+        glMatrix.mat4.identity(this.view);
 
         this.productComputed = false;
     }
@@ -111,7 +115,8 @@ export class Transformations {
     setPerspective(fovY, ratio, near, far) {
 
         glMatrix.mat4.perspective(this.projection,
-            fovY, ratio, near, far);
+            fovY / Math.PI * 180.0, 
+            ratio, near, far);
 
         this.productComputed = false;
     }
