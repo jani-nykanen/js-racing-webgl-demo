@@ -85,49 +85,18 @@ export class Canvas {
         let c = this.canvas;
         let x, y;
         let width, height;
-        let mul;
 
-        if(this.scaleHeight) {   
+        // Find the best multiplier for
+        // square pixels
+        let mul = Math.min(
+            (w / c.width) | 0, 
+            (h / c.height) | 0);
             
-            // Preserve vertical viewport
-            if(w/h >= this.w / this.h) {
-
-                c.width = this.cw;
-                c.height = this.ch;
-
-                width = h / this.ch * this.cw;
-                height = h;
-
-                x = w/2 - width/2;
-                y = 0;
-            }
-            // Scale height
-            else {
-
-                x = 0;
-                y = 0;
-                width = w;
-                height = h;
-
-                c.width = this.cw;
-                c.height = c.width/w * h;
-            }
-        }
-        else {
-
-            // Find the best multiplier for
-            // square pixels
-            mul = Math.min(
-                (w / c.width) | 0, 
-                (h / c.height) | 0);
-            
-            // Compute properties
-            width = c.width * mul;
-            height = c.height * mul;
-            x = w/2 - width/2;
-            y = h/2 - height/2;
-
-        }
+        // Compute properties
+        width = c.width * mul;
+        height = c.height * mul;
+        x = w/2 - width/2;
+        y = h/2 - height/2;
         
         // Set style properties
         let top = String(y | 0) + "px";
