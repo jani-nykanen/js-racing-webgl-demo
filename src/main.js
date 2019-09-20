@@ -20,11 +20,13 @@ window.onload = () => {
 
     // Set assets loading
     c.assets.addTextures(
-        {name: "test", src: "assets/bitmaps/test.png"},
-        {name: "font", src: "assets/bitmaps/font.png"},
+        {name: "test",   src: "assets/bitmaps/test.png"},
+        {name: "font",   src: "assets/bitmaps/font.png"},
+        {name: "donkey", src: "assets/bitmaps/donkey.png"},
     );
     c.assets.addMeshes(
-        {name: "cube", src: "assets/models/cube.obj"},
+        {name: "cube",   src: "assets/models/cube.obj"},
+        {name: "horse",  src: "assets/models/horse.obj"},
     );
 
     // Configure keys

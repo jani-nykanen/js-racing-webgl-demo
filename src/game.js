@@ -78,14 +78,14 @@ export class Game {
         c.toggleDepthTest(true);
         c.resetCoordinateTransition();
         c.setPerspective(70.0, c.w / c.h, 0.1, 100.0);
-        c.setCamera(0, 0, -4, 0, 0, 0);
+        c.setCamera(0, 4, -6, 0, 0, 0);
         c.loadIdentity();
         c.useTransform();
 
         // Set light & fog
         c.toggleFogAndLighting(true);
         c.setLighting(1.0, 0, 0, 1);
-        c.setFog(0.25, 0, 0, 0);
+        c.setFog(0.15, 0, 0, 0);
 
         // Set transformation
         c.push();
@@ -95,7 +95,7 @@ export class Game {
         c.useTransform();
 
         c.setColor();
-        c.drawMesh(c.meshes.cube, c.textures.test);
+        c.drawMesh(c.meshes.horse, c.textures.donkey);
 
         c.pop();
 
@@ -106,7 +106,7 @@ export class Game {
         c.useTransform();
 
         c.setColor(0);
-        c.drawText(c.textures.font, "USE ARROW KEYS.\nFOR FUN",
+        c.drawText(c.textures.font, "USE ARROW KEYS.\nFOR FUN.",
             2, 2, -1, 0);
     }
 
