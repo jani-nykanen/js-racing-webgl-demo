@@ -32,6 +32,7 @@ export class Core {
         // the initialization)
         this.ev.textures = this.assets.textures;
         this.canvas.textures = this.assets.textures;
+        this.canvas.meshes = this.assets.meshes;
 
         // Compute required values
         this.ev.step = 60.0 / this.frameRate;

@@ -41,25 +41,31 @@ export class Game {
 
         // Start 3D rendering
         c.toggleDepthTest(true);
+        c.resetCoordinateTransition();
         c.setPerspective(70.0, c.w / c.h, 0.1, 100.0);
-        c.setCamera(0, 0, -1, 0, 0, 0);
+        c.setCamera(0, 0, -4, 0, 0, 0);
         c.loadIdentity();
         c.useTransform();
 
+        // Set light & fog
+        c.toggleFogAndLighting(true);
+        c.setLighting(1.0, 0, 0, 1);
+        c.setFog(0.25, 0, 0, 0);
+
+        // Set transformation
         c.push();
         c.translate(0, 0, 0);
         c.rotate(this.angle, 1, 0.5, 1);
         c.useTransform();
 
-        c.setColor(1, 1, 1, 1);
-        c.drawTexture(c.textures.test,
-            -0.5, -0.5, 1, 1);
+        c.setColor();
+        c.drawMesh(c.meshes.cube, c.textures.test);
 
-        
         c.pop();
 
         // Start 2D rendering
         c.toggleDepthTest(false);
+        c.toggleFogAndLighting(false);
         c.setView2D(c.w, c.h);
         c.useTransform();
 

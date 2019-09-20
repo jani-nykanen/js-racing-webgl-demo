@@ -39,6 +39,8 @@ export class Canvas extends Transformations {
         this.activeShader = this.shaders.noTex;
         this.activeShader.use();
 
+        this.prevShader = this.activeShader;
+
         this.mRect = this.createRectMesh();
 
         // Store previously bounded objects to
@@ -142,7 +144,8 @@ export class Canvas extends Transformations {
         gl.enableVertexAttribArray(1);
         gl.enableVertexAttribArray(2);
 
-        // We do not need to recompute this ever
+        // We do not need to recompute this ever again,
+        // hopefully
         gl.viewport(0, 0, this.w, this.h);
     }
 
@@ -279,7 +282,7 @@ export class Canvas extends Transformations {
 
         this.activeShader.setVertexTransform(
             dx, dy, 0, 
-            dw, dh, 0);
+            dw, dh, 1);
         this.activeShader.setFragTransform(
             sx/tex.w, sy/tex.h, 
             sw/tex.w, sh/tex.h);
@@ -344,6 +347,25 @@ export class Canvas extends Transformations {
     }
 
 
+    // Reset vertex & fragment coordinate transitions 
+    resetCoordinateTransition() {
+
+        this.activeShader.setVertexTransform(
+            0, 0, 0, 1, 1, 1);
+        this.activeShader.setFragTransform(0, 0, 1, 1);
+    }
+
+
+    // Draw a mesh to the transformation position
+    drawMesh(mesh, tex) {
+
+        this.bindTexture(tex);
+        this.bindMesh(mesh);
+
+        mesh.draw(this.gl);
+    }
+
+
     // Toggle depth test
     toggleDepthTest(state) {
 
@@ -351,5 +373,42 @@ export class Canvas extends Transformations {
             this.gl.enable(this.gl.DEPTH_TEST);
         else
             this.gl.disable(this.gl.DEPTH_TEST);
+    }
+
+
+    // Toggle fog & lighting
+    toggleFogAndLighting(state) {
+
+        if (state 
+            && this.activeShader != this.shaders.fogAndLight) {
+
+            this.prevShader = this.activeShader;
+            this.activeShader = this.shaders.fogAndLight;
+            this.activeShader.use();
+
+            // Needed to pass correct info to the shader
+            this.useTransform();
+        }
+        else {
+
+            // Re-enable the old shader
+            this.activeShader = this.prevShader;
+            this.activeShader.use();
+        }
+    }
+
+
+    // Set fog settings
+    setFog(density, r, g, b) {
+
+        this.activeShader.setFog(density, r, g, b);
+    }
+
+    
+    // Set lighting settings. (x, y, z) is the direction,
+    // and should be normalized if possible
+    setLighting(mag, x, y, z) {
+
+        this.activeShader.setLight(mag, x, y, z);
     }
 }

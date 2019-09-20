@@ -23,6 +23,9 @@ window.onload = () => {
         {name: "test", src: "assets/bitmaps/test.png"},
         {name: "font", src: "assets/bitmaps/font.png"},
     );
+    c.assets.addMeshes(
+        {name: "cube", src: "assets/models/cube.obj"},
+    );
 
     c.run();
 }

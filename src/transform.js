@@ -115,7 +115,7 @@ export class Transformations {
     setPerspective(fovY, ratio, near, far) {
 
         glMatrix.mat4.perspective(this.projection,
-            fovY / Math.PI * 180.0, 
+            fovY / 180.0 * Math.PI, 
             ratio, near, far);
 
         this.productComputed = false;
