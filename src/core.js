@@ -129,6 +129,17 @@ export class Core {
     }
 
 
+    // Configure "actions", i.e. key configuration,
+    // really
+    configActions() {
+
+        for (let a of arguments) {
+
+            this.ev.input.addAction(a.name, a.key);
+        }
+    }
+
+
     // Starts the application. Never returns.
     run() {
 

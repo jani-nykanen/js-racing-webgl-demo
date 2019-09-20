@@ -1,3 +1,5 @@
+import { InputManager } from "./input.js";
+
 //
 // Event
 // Has information of most things needed
@@ -17,6 +19,8 @@ export class FrameEvent {
         // Scenes
         this.scenes = [];
         this.activeScene = null;
+
+        this.input = new InputManager();
     }
 
 
@@ -36,12 +40,18 @@ export class FrameEvent {
     // Update event components (like input)
     update() {
 
+        // Update actions states
+        this.input.updateActions();
+
         // Call user-defined update function
         if (this.activeScene != null && 
             this.activeScene.update != null) {
 
             this.activeScene.update(this);
         }
+
+        // Update input states
+        this.input.updateStates();
     }
 
 

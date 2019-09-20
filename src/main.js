@@ -27,5 +27,16 @@ window.onload = () => {
         {name: "cube", src: "assets/models/cube.obj"},
     );
 
+    // Configure keys
+    c.configActions(
+        {name: "left", key: 37},
+        {name: "up", key: 38},
+        {name: "right", key: 39},
+        {name: "down", key: 40},
+
+        {name: "start", key: 13},
+        {name: "back", key: 27},
+    )
+
     c.run();
 }

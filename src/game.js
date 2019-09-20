@@ -1,3 +1,7 @@
+import { State } from "./input.js";
+import { Vector3 } from "./vector.js";
+import { clamp, negMod } from "./util.js";
+
 //
 // Game scene
 // The main gameplay happens here
@@ -12,7 +16,7 @@ export class Game {
 
         // ...
 
-        this.angle = 0;
+        this.angle = new Vector3();
     }
 
 
@@ -29,8 +33,39 @@ export class Game {
 
         // ...
 
-        this.angle += 0.05 * ev.step;
-        this.angle %= Math.PI * 2;
+        let dx = 0;
+        let dy = 0;
+
+        // If enter pressed, reset cube angle
+        if (ev.input.action.start.state == State.Pressed) {
+
+            this.angle.x = 0;
+            this.angle.y = 0;
+        }
+
+        // Check arrow keys
+        if (ev.input.action.left.state == State.Down) {
+
+            dy = -1;
+        }
+        else if (ev.input.action.right.state == State.Down) {
+
+            dy = 1;
+        }
+        if (ev.input.action.up.state == State.Down) {
+
+            dx = -1;
+        }
+        else if (ev.input.action.down.state == State.Down) {
+
+            dx = 1;
+        }
+
+        this.angle.x += 0.05 * dx * ev.step;
+        this.angle.x = negMod(this.angle.x, Math.PI*2);
+
+        this.angle.y += 0.05 * dy * ev.step;
+        this.angle.y = negMod(this.angle.y, Math.PI*2);
     }
 
 
@@ -55,7 +90,8 @@ export class Game {
         // Set transformation
         c.push();
         c.translate(0, 0, 0);
-        c.rotate(this.angle, 1, 0.5, 1);
+        c.rotate(this.angle.x, 1, 0, 0);
+        c.rotate(this.angle.y, 0, 1, 0);
         c.useTransform();
 
         c.setColor();
@@ -70,7 +106,7 @@ export class Game {
         c.useTransform();
 
         c.setColor(0);
-        c.drawText(c.textures.font, "HELLO WORLD",
+        c.drawText(c.textures.font, "USE ARROW KEYS.\nFOR FUN",
             2, 2, -1, 0);
     }
 
