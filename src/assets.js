@@ -72,6 +72,13 @@ export class AssetLoader {
             (str) => {
 
             let rawMesh = new OBJ.Mesh(str);
+
+            // Invert texture y coordinates
+            for (let i = 1; i < rawMesh.textures.length; i += 2) {
+
+                rawMesh.textures[i] = 1.0 - rawMesh.textures[i];
+            }
+
             // Create a mesh
             this.meshes[name] = new Mesh(
                 this.gl,
