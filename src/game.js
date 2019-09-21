@@ -1,6 +1,7 @@
 import { State } from "./input.js";
 import { Vector3 } from "./vector.js";
 import { clamp, negMod } from "./util.js";
+import { Racer } from "./racer.js";
 
 //
 // Game scene
@@ -15,8 +16,6 @@ export class Game {
     constructor() {
 
         // ...
-
-        this.angle = new Vector3();
     }
 
 
@@ -24,48 +23,29 @@ export class Game {
     // (or the things that need assets, really)
     init(ev) {
 
-        // ...
+        const RACER_COUNT = 1;
+
+        // Create racers (the racer in index 0 is
+        // the player racer)
+        this.racers = new Array(RACER_COUNT);
+        for (let i = 0; i < RACER_COUNT; ++ i) {
+
+            this.racers[i] = new Racer(0, 0, 0, i > 0);
+        }
+
+        // Set initial values
+        this.angle = new Vector3();
     }
 
 
     // Update the scene
     update(ev) {
 
-        // ...
+        // Update racers
+        for (let r of this.racers) {
 
-        let dx = 0;
-        let dy = 0;
-
-        // If enter pressed, reset cube angle
-        if (ev.input.action.start.state == State.Pressed) {
-
-            this.angle.x = 0;
-            this.angle.y = 0;
+            r.update(ev);
         }
-
-        // Check arrow keys
-        if (ev.input.action.left.state == State.Down) {
-
-            dy = -1;
-        }
-        else if (ev.input.action.right.state == State.Down) {
-
-            dy = 1;
-        }
-        if (ev.input.action.up.state == State.Down) {
-
-            dx = -1;
-        }
-        else if (ev.input.action.down.state == State.Down) {
-
-            dx = 1;
-        }
-
-        this.angle.x += 0.05 * dx * ev.step;
-        this.angle.x = negMod(this.angle.x, Math.PI*2);
-
-        this.angle.y += 0.05 * dy * ev.step;
-        this.angle.y = negMod(this.angle.y, Math.PI*2);
     }
 
 
@@ -87,17 +67,11 @@ export class Game {
         c.setLighting(1.0, 0, 0, 1);
         c.setFog(0.15, 0, 0, 0);
 
-        // Set transformation
-        c.push();
-        c.translate(0, 0, 0);
-        c.rotate(this.angle.x, 1, 0, 0);
-        c.rotate(this.angle.y, 0, 1, 0);
-        c.useTransform();
+        // Draw racers
+        for (let r of this.racers) {
 
-        c.setColor();
-        c.drawMesh(c.meshes.horse, c.textures.donkey);
-
-        c.pop();
+            r.draw(c);
+        }
 
         // Start 2D rendering
         c.toggleDepthTest(false);
