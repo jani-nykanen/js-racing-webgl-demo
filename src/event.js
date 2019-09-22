@@ -25,13 +25,13 @@ export class FrameEvent {
 
 
     // Initialize all the scenes
-    initScenes() {
+    initScenes(c) {
 
         for (let s of this.scenes) {
 
             if (s.init != null) {
 
-                s.init(this);
+                s.init(this, c);
             }
         }
     }

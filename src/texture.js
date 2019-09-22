@@ -10,7 +10,7 @@
 export class Texture {
 
 
-    constructor(gl, img) {
+    constructor(gl, img, preserve) {
 
         this.tex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.tex);
@@ -27,6 +27,36 @@ export class Texture {
 
         this.w = img.width;
         this.h = img.height;
+
+        // Store source, if required
+        this.pixels = null;
+        if (preserve) {
+
+            this.pixels = this.readPixels(img);
+        }
+    }
+
+
+    // Read the pixel data from the src
+    readPixels(img) {
+        
+        // Create a temporal canvas
+        let cn = document.createElement("canvas");
+        cn.width = img.width;
+        cn.height = img.height;
+        let c = cn.getContext("2d");
+
+        c.drawImage(img, 0, 0);
+        let pdata = c.getImageData(0, 0, img.width, img.height);
+        let pixels = new Uint8Array(pdata.data.length);
+        for (let i = 0; i < pdata.data.length; ++ i) {
+
+            pixels[i] = pdata.data[i];
+        }
+
+        cn.remove();
+
+        return pixels;
     }
 
 

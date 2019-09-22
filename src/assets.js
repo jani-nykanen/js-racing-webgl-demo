@@ -25,14 +25,15 @@ export class AssetLoader {
 
 
     // Start loading a texture
-    loadTexture(src, name) {
+    loadTexture(src, name, preserve) {
 
         ++ this.total;
 
         let image = new Image();
         image.onload = () => {
 
-            this.textures[name] = new Texture(this.gl, image);
+            this.textures[name] = 
+                new Texture(this.gl, image, preserve);
             ++ this.loaded;
         }
         image.src = src;
@@ -96,7 +97,7 @@ export class AssetLoader {
 
         for (let a of arguments) {
 
-            this.loadTexture(a.src, a.name);
+            this.loadTexture(a.src, a.name, a.preserve);
         }
     }
 

@@ -2,6 +2,7 @@ import { State } from "./input.js";
 import { Vector3 } from "./vector.js";
 import { clamp, negMod } from "./util.js";
 import { Racer } from "./racer.js";
+import { Surface } from "./surface.js";
 
 //
 // Game scene
@@ -15,14 +16,6 @@ export class Game {
 
     constructor() {
 
-        // ...
-    }
-
-
-    // Initialize the scene
-    // (or the things that need assets, really)
-    init(ev) {
-
         const RACER_COUNT = 1;
 
         // Create racers (the racer in index 0 is
@@ -35,6 +28,17 @@ export class Game {
 
         // Set initial values
         this.angle = new Vector3();
+    }
+
+
+    // Initialize the scene
+    // (or the things that need assets, really)
+    init(ev, c) {
+
+        
+
+        // Generate a surface
+        this.surf = new Surface(c.textures.surface, c);
     }
 
 
@@ -66,6 +70,14 @@ export class Game {
         c.toggleFogAndLighting(true);
         c.setLighting(1.0, 0, 0, 1);
         c.setFog(0.15, 0, 0, 0);
+
+        // Draw surface
+        c.push();
+        c.translate(-4, -4, -4);
+        c.scale(8, 8, 8);
+        c.useTransform();
+        c.drawMesh(this.surf.mesh, c.textures.snow);
+        c.pop();
 
         // Draw racers
         for (let r of this.racers) {

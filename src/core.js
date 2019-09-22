@@ -48,6 +48,8 @@ export class Core {
 
         this.timeSum = 0;
         this.oldTime = 0;
+
+        this.initialized = false;
     }
 
 
@@ -89,6 +91,17 @@ export class Core {
         while ( (loopCount --) > 0) {
 
             if (this.assets.hasLoaded()) {
+
+                // Initialize scenes now
+                if (!this.initialized) {
+
+                    // Initialize scenes
+                    this.ev.initScenes(this.canvas);
+                    // No need for this any longer
+                    this.ev.textures = null;
+
+                    this.initialized = true;
+                }
 
                 // Update frame event
                 this.ev.update();
@@ -142,11 +155,6 @@ export class Core {
 
     // Starts the application. Never returns.
     run() {
-
-        // Initialize scenes
-        this.ev.initScenes();
-        // No need for this any longer
-        this.ev.textures = null;
 
         // Start the main loop
         this.loop(0);

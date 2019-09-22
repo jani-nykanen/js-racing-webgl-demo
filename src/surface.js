@@ -1,0 +1,133 @@
+import { negMod } from "./util.js";
+import { Mesh } from "./mesh.js";
+
+//
+// Represent a surface of form
+// S = { (x,y,z) | y = f(x, z) }.
+// Generated from a heightmap.
+// (c) 2019 Jani Nykänen
+// 
+
+
+export class Surface {
+
+
+    constructor(tex, c) {
+
+        this.w = tex.w;
+        this.h = tex.h;
+    
+        if (tex.pixels == null) {
+
+            throw "Texture has no pixel data," +
+                "construct a surface!";
+        }
+
+        this.hmap = this.genHeightmap(tex.pixels);
+        this.mesh = this.genMesh(c.gl);
+    }
+
+
+    // Get a value in the heightmap
+    getHeightValue(x, y) {
+
+        x = negMod(x, this.w);
+        y = negMod(y, this.h);
+
+        if (x == 0 && y == 0)
+            console.log(this.hmap[y * this.w + x]);
+
+        return this.hmap[y * this.w + x];
+    }
+
+
+    // Generate a heightmap from the data
+    // (values scaled to range [0, 1])
+    genHeightmap(data) {
+
+        let hmap = new Float32Array(this.w*this.h);
+
+        let i;
+        let v;
+        for (let y = 0; y < this.h; ++ y) {
+
+            for (let x = 0; x < this.w; ++ x) {
+
+                i = y * this.w * 4 + x * 4;
+                // Take the mean of all the color channels,
+                // then scale to [0, 1]
+                v = ((data[i] + data[i+1] + data[i+2])/3.0) / 255.0;
+                hmap[y * this.w + x] = v;
+            }
+        }
+
+        return hmap;
+    }
+
+
+    // Generate a mesh using the generated
+    // heightmap data
+    genMesh(gl) {
+
+        let stepx = 1.0 / this.w;
+        let stepy = 1.0 / this.h;
+
+        let vertices = new Array();
+        let uvs = new Array();
+        let normals = new Array();
+        let indices = new Array();
+
+        for (let y = 0; y < this.h-1; ++ y) {
+
+            for (let x = 0; x < this.w-1; ++ x) {
+
+                // Compute vertices (upper and lower triangle)
+                vertices.push(
+                    stepx * x, this.getHeightValue(x, y), stepy * y,
+                    stepx * (x+1), this.getHeightValue(x+1, y), stepy * y,
+                    stepx * (x+1), this.getHeightValue(x+1, y+1), stepy * (y+1),
+
+                    stepx * (x+1), this.getHeightValue(x+1, y+1), stepy * (y+1),
+                    stepx * x, this.getHeightValue(x, y+1), stepy * (y+1),
+                    stepx * x, this.getHeightValue(x, y), stepy * y
+                );
+
+                // Compute UV cordinates
+                uvs.push(
+
+                    0, 0, 
+                    1, 0,
+                    1, 1,
+
+                    1, 1,
+                    0, 1,
+                    0, 0
+                );
+
+                // Compute normals
+                // TODO: This
+                normals.push(
+
+                    0, 1, 0,
+                    0, 1, 0,
+                    0, 1, 0,
+
+                    0, 1, 0,
+                    0, 1, 0,
+                    0, 1, 0,
+                );
+            }
+        }
+
+
+        // Compute indices
+        for (let i = 0; i < vertices.length/3; ++ i) {
+
+            indices.push(indices.length);
+        }
+
+        // Create a mesh
+        return new Mesh(gl, 
+            vertices, uvs, normals, indices);
+    }
+}
