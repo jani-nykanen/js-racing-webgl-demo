@@ -60,5 +60,6 @@ export class Vector3 {
 
     // Return a (deep?) copy of the vector
     clone() { return new Vector3(this.x, this.y, this.z); }
+    
 
 }

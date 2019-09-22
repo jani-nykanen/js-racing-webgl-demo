@@ -18,6 +18,7 @@ export class Transformations {
         this.projection = glMatrix.mat4.create();
         this.product = glMatrix.mat4.create();
         this.rotation = glMatrix.mat4.create();
+        this.op = glMatrix.mat4.create();
 
         // Stack
         this.stack = [];
@@ -85,6 +86,24 @@ export class Transformations {
             );
 
         this.productComputed = false;
+    }
+
+
+    // Set basis
+    setBasis(left, up, front) {
+
+        this.op = glMatrix.mat4.fromValues(
+            left.x, left.y, left.z, 0,
+            up.x, up.y, up.z, 0,
+            front.x, front.y, front.z, 0,
+            0, 0, 0, 1
+        );
+
+        glMatrix.mat4.mul(this.model, this.model,
+            this.op);
+
+        glMatrix.mat4.mul(this.rotation, this.rotation,
+            this.op);    
     }
 
 

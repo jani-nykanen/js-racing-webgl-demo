@@ -65,7 +65,8 @@ export class Surface {
     // Computes a surface normal for the given coordinate
     computeSurfaceNormal(data, x, y) {
 
-        let v1, v2, v3, v4, n1, n2;
+        let v1, v2, v3, v4;
+        let n1, n2, n3;
 
         let i = y*this.w + x;
         let j = y*this.w + x + 1;
@@ -114,17 +115,24 @@ export class Surface {
         );
         glMatrix.vec3.normalize(v4, v4);
 
+        // Compute the normals using the cross
+        // product
         n1 = glMatrix.vec3.create();
         glMatrix.vec3.cross(n1, v1, v2);
 
         n2 = glMatrix.vec3.create();
         glMatrix.vec3.cross(n2, v3, v4);
 
-        return [ 
+        // Compute the mean vector. We can safely
+        // assume that this is not 0
+        n3 = glMatrix.vec3.fromValues(
             -0.5 * (n1[0]+n2[0]),
             -0.5 * (n1[1]+n2[1]),
             -0.5 * (n1[2]+n2[2]),
-        ];
+        );
+        glMatrix.vec3.normalize(n3, n3);
+
+        return n3;
     }
 
 

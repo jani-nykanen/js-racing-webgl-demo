@@ -1,3 +1,5 @@
+import { Vector3 } from "./vector.js";
+
 //
 // Simple utility functions
 // (c) 2019 Jani Nykänen
@@ -52,4 +54,28 @@ export function toggleFullscreen(canvas) {
             canvas.mozRequestFullScreen();
         
     }
+}
+
+
+// Is a point inside a triangle
+export function isInsideTriangle(
+    px, py, x1, y1, x2, y2, x3, y3) {
+
+    let as_x = px-x1;
+    let as_y = py-y1;
+    let s_ab = (x2-x1)*as_y-(y2-y1)*as_x > 0;
+
+    return !(((x3-x1)*as_y-(y3-y1)*as_x > 0) == s_ab || 
+        ((x3-x2)*(py-y2)-(y3-y2)*(px-x2) > 0) != s_ab);
+}
+
+
+// Cross-product
+export function cross(v1, v2) {
+
+    return new Vector3(
+        v1.y*v2.z - v2.y*v1.z,
+        v1.x*v2.z - v2.x*v1.z,
+        v1.x*v2.y - v2.x*v1.y
+    );
 }

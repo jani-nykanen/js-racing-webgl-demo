@@ -3,6 +3,7 @@ import { Vector3 } from "./vector.js";
 import { clamp, negMod } from "./util.js";
 import { Racer } from "./racer.js";
 import { Surface } from "./surface.js";
+import { Stage } from "./stage.js";
 
 //
 // Game scene
@@ -23,7 +24,7 @@ export class Game {
         this.racers = new Array(RACER_COUNT);
         for (let i = 0; i < RACER_COUNT; ++ i) {
 
-            this.racers[i] = new Racer(0, 0, 0, i > 0);
+            this.racers[i] = new Racer(0.0001, 0, 0.0001, i > 0);
         }
 
         // Set initial values
@@ -35,10 +36,8 @@ export class Game {
     // (or the things that need assets, really)
     init(ev, c) {
 
-        
-
-        // Generate a surface
-        this.surf = new Surface(c.textures.surface, c);
+        // Create stage
+        this.stage = new Stage(ev, c, 64.0, 32.0, 64.0);
     }
 
 
@@ -49,7 +48,9 @@ export class Game {
         for (let r of this.racers) {
 
             r.update(ev);
+            this.stage.getCollisions(r);
         }
+        
     }
 
 
@@ -62,27 +63,21 @@ export class Game {
         c.toggleDepthTest(true);
         c.resetCoordinateTransition();
         c.setPerspective(70.0, c.w / c.h, 0.1, 100.0);
-        c.setCamera(0, 4, -7, 0, 0, 0);
+        // TEMP
+        c.setCamera(
+            this.racers[0].pos.x, this.racers[0].pos.y + 12, this.racers[0].pos.z - 12, 
+            this.racers[0].pos.x, this.racers[0].pos.y, this.racers[0].pos.z);
         c.loadIdentity();
         c.useTransform();
 
         // Set light & fog
         c.toggleFogAndLighting(true);
-        c.setLighting(1.0, 0, 0, 1);
-        c.setFog(0.125, 0, 0, 0);
+        //c.setLighting(0.75, 0, -1.0 / Math.sqrt(2), 1.0 / Math.sqrt(2));
+        c.setLighting(0.75, 0, 0, 1);
+        c.setFog(0.035, 0, 0, 0);
 
-        // Draw surface
-        c.push();
-        c.translate(-0.5, 0, -0.5);
-        c.rotate(this.racers[0].angle, 0, 1, 0);
-        c.translate(0.5, 0, 0.5);
-        
-        c.scale(10, 8, 10);
-        c.translate(-0.5, -0.5, -0.5);
-
-        c.useTransform();
-        c.drawMesh(this.surf.mesh, c.textures.snow);
-        c.pop();
+        // Draw stage
+        this.stage.draw(c);
 
         // Draw racers
         for (let r of this.racers) {
@@ -97,6 +92,10 @@ export class Game {
         c.useTransform();
 
         c.setColor(0);
+        c.drawText(c.textures.font, "USE ARROW KEYS.\nFOR FUN.",
+            3, 3, -1, 0);
+
+        c.setColor(1);
         c.drawText(c.textures.font, "USE ARROW KEYS.\nFOR FUN.",
             2, 2, -1, 0);
     }
