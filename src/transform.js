@@ -21,6 +21,7 @@ export class Transformations {
 
         // Stack
         this.stack = [];
+        this.rotStack = [];
 
         this.productComputed = false;
 
@@ -132,6 +133,7 @@ export class Transformations {
         }
 
         this.stack.push(glMatrix.mat4.clone(this.model));
+        this.rotStack.push(glMatrix.mat4.clone(this.rotation));
     }
 
 
@@ -140,6 +142,8 @@ export class Transformations {
     pop() {
 
         this.model = this.stack.pop();
+        this.rotation = this.rotStack.pop();
+
         this.productComputed = false;
     }
     
