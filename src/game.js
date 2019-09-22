@@ -62,19 +62,24 @@ export class Game {
         c.toggleDepthTest(true);
         c.resetCoordinateTransition();
         c.setPerspective(70.0, c.w / c.h, 0.1, 100.0);
-        c.setCamera(0, 4, -6, 0, 0, 0);
+        c.setCamera(0, 4, -7, 0, 0, 0);
         c.loadIdentity();
         c.useTransform();
 
         // Set light & fog
         c.toggleFogAndLighting(true);
         c.setLighting(1.0, 0, 0, 1);
-        c.setFog(0.15, 0, 0, 0);
+        c.setFog(0.125, 0, 0, 0);
 
         // Draw surface
         c.push();
-        c.translate(-4, -4, -4);
-        c.scale(8, 8, 8);
+        c.translate(-0.5, 0, -0.5);
+        c.rotate(this.racers[0].angle, 0, 1, 0);
+        c.translate(0.5, 0, 0.5);
+        
+        c.scale(10, 8, 10);
+        c.translate(-0.5, -0.5, -0.5);
+
         c.useTransform();
         c.drawMesh(this.surf.mesh, c.textures.snow);
         c.pop();

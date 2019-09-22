@@ -85,7 +85,7 @@ export class Surface {
         let n = glMatrix.vec3.create();
         glMatrix.vec3.cross(n, v1, v2);
 
-        return [n[0], n[1], n[2]];
+        return [-n[0], -n[1], -n[2]];
     }
 
 
@@ -100,6 +100,8 @@ export class Surface {
         let uvs = new Array();
         let normals = new Array();
         let indices = new Array();
+
+        let n1, n2;
 
         for (let y = 0; y < this.h-1; ++ y) {
 
@@ -129,16 +131,17 @@ export class Surface {
                 );
 
                 // Compute normals
-                // TODO: This
+                n1 = this.computeSurfaceNormal(vertices, vertices.length-18);
+                n2 = this.computeSurfaceNormal(vertices, vertices.length - 9);
                 normals.push(
 
-                    0, 1, 0,
-                    0, 1, 0,
-                    0, 1, 0,
+                    ...n1,
+                    ...n1,
+                    ...n1,
 
-                    0, 1, 0,
-                    0, 1, 0,
-                    0, 1, 0,
+                    ...n2,
+                    ...n2,
+                    ...n2,
                 );
             }
         }
