@@ -125,6 +125,12 @@ export class Transformations {
     // Push the current model matrix to the stack
     push() {
 
+        const MAX_LEN = 64;
+        if (this.stack.length == MAX_LEN) {
+
+            throw "A risk for stack overflow!";
+        }
+
         this.stack.push(glMatrix.mat4.clone(this.model));
     }
 

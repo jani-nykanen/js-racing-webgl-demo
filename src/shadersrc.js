@@ -24,15 +24,22 @@ uniform mat4 transform;
 uniform mat4 rotation;
 uniform vec3 pos;
 uniform vec3 size;
+
+uniform vec3 lightDir;
+uniform float lightMag;
+
 varying vec2 uv;
-varying vec3 rot;
+varying float light;
    
 void main() {
     vec3 p = vertexPos * size + pos;
     vec4 o = transform * vec4(p, 1);
     gl_Position = o;
-    rot = (rotation * vec4(vertexNormal,1)).xyz;
+    
     uv = vertexUV;
+    
+    vec3 rot = (rotation * vec4(vertexNormal,1)).xyz;
+    light = (1.0-lightMag) + lightMag * dot(rot, lightDir);
 }`;
 export const VertexNoTex =
 `
@@ -66,11 +73,8 @@ uniform float fogDensity;
 uniform vec2 texPos;
 uniform vec2 texSize;
 
-uniform vec3 lightDir;
-uniform float lightMag;
-
 varying vec2 uv;
-varying vec3 rot;
+varying float light;
 
 void main() {
 
@@ -90,8 +94,8 @@ void main() {
     float d = z * fogDensity;
     float fog = 1.0 / exp(d*d);
     fog = clamp(fog, 0.0, 1.0);
-    float l = (1.0-lightMag) + lightMag * dot(rot, lightDir);
-    gl_FragColor = vec4((1.0-l)*(fog*res.xyz + (1.0-fog)*fogColor.xyz), res.a);
+
+    gl_FragColor = vec4((1.0-light)*(fog*res.xyz + (1.0-fog)*fogColor.xyz), res.a);
 }
 `
 export const FragTex = 

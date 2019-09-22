@@ -34,9 +34,6 @@ export class Surface {
         x = negMod(x, this.w);
         y = negMod(y, this.h);
 
-        if (x == 0 && y == 0)
-            console.log(this.hmap[y * this.w + x]);
-
         return this.hmap[y * this.w + x];
     }
 
