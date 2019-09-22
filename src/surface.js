@@ -65,6 +65,30 @@ export class Surface {
     }
 
 
+    // Compute a surface normal
+    computeSurfaceNormal(data, i) {
+
+        let v1 = glMatrix.vec3.fromValues(
+            data[i+3] - data[i], 
+            data[i+4] - data[i+1], 
+            data[i+5] - data[i+2]
+        );
+        glMatrix.vec3.normalize(v1, v1);
+
+        let v2 = glMatrix.vec3.fromValues(
+            data[i+6] - data[i], 
+            data[i+7] - data[i+1], 
+            data[i+8] - data[i+2]
+        );
+        glMatrix.vec3.normalize(v2, v2);
+
+        let n = glMatrix.vec3.create();
+        glMatrix.vec3.cross(n, v1, v2);
+
+        return [n[0], n[1], n[2]];
+    }
+
+
     // Generate a mesh using the generated
     // heightmap data
     genMesh(gl) {
