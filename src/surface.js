@@ -62,27 +62,69 @@ export class Surface {
     }
 
 
-    // Compute a surface normal
-    computeSurfaceNormal(data, i) {
+    // Computes a surface normal for the given coordinate
+    computeSurfaceNormal(data, x, y) {
 
-        let v1 = glMatrix.vec3.fromValues(
-            data[i+3] - data[i], 
-            data[i+4] - data[i+1], 
-            data[i+5] - data[i+2]
+        let v1, v2, v3, v4, n1, n2;
+
+        let i = y*this.w + x;
+        let j = y*this.w + x + 1;
+        let k = (y+1)*this.w + x + 1;
+        let l = (y+1)*this.w + x;
+
+        let ox, oy, oz;
+
+        // Compute two different normals and
+        // take their mean, which is a sufficient
+        // approximation for the surface normals
+
+        ox = data[i*3];
+        oy = data[i*3 + 1];
+        oz = data[i*3 + 2];
+
+        v1 = glMatrix.vec3.fromValues(
+            data[j*3] - ox, 
+            data[j*3 + 1] - oy, 
+            data[j*3 + 2] - oz
         );
         glMatrix.vec3.normalize(v1, v1);
 
-        let v2 = glMatrix.vec3.fromValues(
-            data[i+6] - data[i], 
-            data[i+7] - data[i+1], 
-            data[i+8] - data[i+2]
+        v2 = glMatrix.vec3.fromValues(
+            data[k*3] - ox, 
+            data[k*3 + 1] - oy, 
+            data[k*3 + 2] - oz
         );
         glMatrix.vec3.normalize(v2, v2);
 
-        let n = glMatrix.vec3.create();
-        glMatrix.vec3.cross(n, v1, v2);
+        ox = data[l*3];
+        oy = data[l*3 + 1];
+        oz = data[l*3 + 2];
 
-        return [-n[0], -n[1], -n[2]];
+        v3 = glMatrix.vec3.fromValues(
+            data[j*3] - ox, 
+            data[j*3 + 1] - oy, 
+            data[j*3 + 2] - oz
+        );
+        glMatrix.vec3.normalize(v3, v3);
+
+        v4 = glMatrix.vec3.fromValues(
+            data[k*3] - ox, 
+            data[k*3 + 1] - oy, 
+            data[k*3 + 2] - oz
+        );
+        glMatrix.vec3.normalize(v4, v4);
+
+        n1 = glMatrix.vec3.create();
+        glMatrix.vec3.cross(n1, v1, v2);
+
+        n2 = glMatrix.vec3.create();
+        glMatrix.vec3.cross(n2, v3, v4);
+
+        return [ 
+            -0.5 * (n1[0]+n2[0]),
+            -0.5 * (n1[1]+n2[1]),
+            -0.5 * (n1[2]+n2[2]),
+        ];
     }
 
 
@@ -98,56 +140,77 @@ export class Surface {
         let normals = new Array();
         let indices = new Array();
 
-        let n1, n2;
+        let n;
 
+        // Set vertices
+        for (let y = 0; y < this.h; ++ y) {
+
+            for (let x = 0; x < this.w; ++ x) {
+
+                vertices.push(
+                    stepx * x,
+                    this.getHeightValue(x, y), 
+                    stepy * y);
+
+                uvs.push(x, y);
+            }
+        }
+
+        
+        // Compute indices
         for (let y = 0; y < this.h-1; ++ y) {
 
             for (let x = 0; x < this.w-1; ++ x) {
 
-                // Compute vertices (upper and lower triangle)
-                vertices.push(
-                    stepx * x, this.getHeightValue(x, y), stepy * y,
-                    stepx * (x+1), this.getHeightValue(x+1, y), stepy * y,
-                    stepx * (x+1), this.getHeightValue(x+1, y+1), stepy * (y+1),
+                indices.push(   
 
-                    stepx * (x+1), this.getHeightValue(x+1, y+1), stepy * (y+1),
-                    stepx * x, this.getHeightValue(x, y+1), stepy * (y+1),
-                    stepx * x, this.getHeightValue(x, y), stepy * y
-                );
+                    y * this.w + x,
+                    y * this.w + x + 1,
+                    (y+1) * this.w + x + 1,
 
-                // Compute UV cordinates
-                uvs.push(
-
-                    0, 0, 
-                    1, 0,
-                    1, 1,
-
-                    1, 1,
-                    0, 1,
-                    0, 0
-                );
-
-                // Compute normals
-                n1 = this.computeSurfaceNormal(vertices, vertices.length-18);
-                n2 = this.computeSurfaceNormal(vertices, vertices.length - 9);
-                normals.push(
-
-                    ...n1,
-                    ...n1,
-                    ...n1,
-
-                    ...n2,
-                    ...n2,
-                    ...n2,
+                    (y+1) * this.w + x + 1,
+                    (y+1) * this.w + x,
+                    y * this.w + x,
                 );
             }
         }
 
+        // Compute normals
+        // (has to be computed after the vertices)
+        for (let y = 0; y < this.h; ++ y) {
 
-        // Compute indices
-        for (let i = 0; i < vertices.length/3; ++ i) {
+            for (let x = 0; x < this.w; ++ x) {
 
-            indices.push(indices.length);
+                if (x == this.w-1 && y == this.h-1) {
+
+                    normals.push(
+                        normals[((y-1)*this.w+x-1)*3],
+                        normals[((y-1)*this.w+x-1)*3 +1],
+                        normals[((y-1)*this.w+x-1)*3 +2]
+                    );
+                }
+                if (x == this.w-1) {
+
+                    normals.push(
+                        normals[(y*this.w+x-1)*3],
+                        normals[(y*this.w+x-1)*3 +1],
+                        normals[(y*this.w+x-1)*3 +2]
+                        );
+                }
+                else if(y == this.h-1) {
+
+                    normals.push(
+                        normals[((y-1)*this.w+x)*3],
+                        normals[((y-1)*this.w+x)*3 +1],
+                        normals[((y-1)*this.w+x)*3 +2]
+                        );
+                }
+                else {
+
+                    n = this.computeSurfaceNormal(vertices, x, y);
+                    normals.push(...n);
+                }
+            }
         }
 
         // Create a mesh
