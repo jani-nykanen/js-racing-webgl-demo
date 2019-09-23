@@ -4,6 +4,7 @@ import { clamp, negMod } from "./util.js";
 import { Racer } from "./racer.js";
 import { Surface } from "./surface.js";
 import { Stage } from "./stage.js";
+import { Camera } from "./camera.js";
 
 //
 // Game scene
@@ -24,11 +25,13 @@ export class Game {
         this.racers = new Array(RACER_COUNT);
         for (let i = 0; i < RACER_COUNT; ++ i) {
 
-            this.racers[i] = new Racer(0.0001, 0, 0.0001, i > 0);
+            this.racers[i] = new Racer(0.0001, 32, 0.0001, i > 0);
         }
 
         // Set initial values
         this.angle = new Vector3();
+
+        this.cam = new Camera();
     }
 
 
@@ -50,6 +53,9 @@ export class Game {
             r.update(ev);
             this.stage.getCollisions(r);
         }
+
+        this.cam.followRacer(this.racers[0]);
+        this.stage.getCollisions(this.cam);
         
     }
 
@@ -64,16 +70,14 @@ export class Game {
         c.resetCoordinateTransition();
         c.setPerspective(70.0, c.w / c.h, 0.1, 100.0);
         // TEMP
-        c.setCamera(
-            this.racers[0].pos.x, this.racers[0].pos.y + 12, this.racers[0].pos.z - 12, 
-            this.racers[0].pos.x, this.racers[0].pos.y, this.racers[0].pos.z);
+        this.cam.use(c);
         c.loadIdentity();
         c.useTransform();
 
         // Set light & fog
         c.toggleFogAndLighting(true);
         //c.setLighting(0.75, 0, -1.0 / Math.sqrt(2), 1.0 / Math.sqrt(2));
-        c.setLighting(0.75, 0, 0, 1);
+        c.setLighting(0.75, this.cam.dir.x, this.cam.dir.y, this.cam.dir.z);
         c.setFog(0.035, 0, 0, 0);
 
         // Draw stage

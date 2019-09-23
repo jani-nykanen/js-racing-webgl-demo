@@ -33,6 +33,9 @@ export class Stage {
         let tx = Math.floor(x / stepx);
         let tz = Math.floor(z / stepz);
 
+        if (tx < 0 || tz < 0 || tx >= this.surf.w || tz >= this.surf.h)
+            return false;
+
         let px = tx*stepx - this.scale.x/2;
         let pz = tz*stepz - this.scale.z/2;
 
@@ -57,8 +60,8 @@ export class Stage {
             this.surf.getHeightValue(tx, tz+1) * this.scale.y, 
             pz + stepz);
 
-        o.planeCollision(topLeft, topRight, bottomRight);
-        o.planeCollision(bottomRight, bottomLeft, topLeft);
+        return o.planeCollision(topLeft, topRight, bottomRight) ||
+               o.planeCollision(bottomRight, bottomLeft, topLeft);
 
     }
 

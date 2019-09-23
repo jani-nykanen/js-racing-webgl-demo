@@ -1,6 +1,7 @@
 import { Vector3 } from "./vector.js";
 import { State } from "./input.js";
 import { negMod, isInsideTriangle, cross } from "./util.js";
+import { Collider } from "./collider.js";
 
 //
 // A racer object
@@ -10,14 +11,12 @@ import { negMod, isInsideTriangle, cross } from "./util.js";
 //
 
 
-export class Racer {
+export class Racer extends Collider {
 
 
     constructor(x, y, z, ai) {
-
-        this.pos = new Vector3(x, y, z);
-        this.speed = new Vector3();
-        this.target = new Vector3();
+        
+        super(x, y, z);
 
         // Directorial vectors
         this.front = new Vector3(0, 0, 1);
@@ -67,7 +66,8 @@ export class Racer {
     control(ev) {
 
         const ANGLE_TARGET = 0.05;
-        const MOVE_SPEED = 0.15;
+        const MOVE_SPEED = 0.25;
+        const BASE_GRAVITY = -0.5;
 
         let angleDir = 0;
         let moveDir = 0;
@@ -101,6 +101,7 @@ export class Racer {
         this.target.z = moveDir * 
             Math.cos(this.angle) * 
             MOVE_SPEED;
+        this.target.y = BASE_GRAVITY;
     }
 
 
@@ -109,6 +110,7 @@ export class Racer {
 
         const MOVE_DELTA = 0.01;
         const ANGLE_DELTA = 0.005;
+        const GRAVITY_DELTA = 0.025;
 
         // Update speed axes
         this.speed.x = this.updateSpeedAxis(
@@ -117,6 +119,9 @@ export class Racer {
         this.speed.z = this.updateSpeedAxis(
             this.speed.z, this.target.z, 
             MOVE_DELTA * ev.step);
+        this.speed.y = this.updateSpeedAxis(
+            this.speed.y, this.target.y, 
+            GRAVITY_DELTA * ev.step);
 
         // Update rotation speed
         this.angleSpeed  = this.updateSpeedAxis(
@@ -127,6 +132,7 @@ export class Racer {
         // Update position
         this.pos.x += this.speed.x * ev.step;
         this.pos.z += this.speed.z * ev.step;
+        this.pos.y += this.speed.y * ev.step;
 
         // Update angle
         this.angle += this.angleSpeed * ev.step;
@@ -136,11 +142,13 @@ export class Racer {
         this.frontDir.x = Math.cos(this.angle);
         this.frontDir.z = -Math.sin(this.angle);
 
+        // Compute default directions
         this.leftDir.x = -this.frontDir.z;
         this.leftDir.z = this.frontDir.x;
 
         this.left = this.leftDir.clone();
         this.front = this.frontDir.clone();
+        this.up = new Vector3(0, 1, 0);
     }
 
 
@@ -169,42 +177,8 @@ export class Racer {
     }
 
 
-    // Collision with a triangular plane piece
-    planeCollision(A, B, C) {
-
-        const EPS = 0.0001;
-
-        // Check if inside the collision triangle
-        if(!isInsideTriangle(this.pos.x, this.pos.z,
-            A.x,A.z, B.x,B.z, C.x,C.z)) 
-            return false;
-    
-        let v1 = new Vector3(B.x-A.x, B.y-A.y, B.z-A.z);
-        let v2 = new Vector3(C.x-A.x, C.y-A.y, C.z-A.z);
-    
-        // Cross product
-        // (It is faster to do this this way than in the
-        //  matrix library)
-        let n = cross(v1, v2);
-        if(Math.abs(n.y) < EPS ) return false;
-        
-        n.normalize();
-        n.y *= -1;
-
-        // Interpret: Plane equation, where n = (a,b,c),
-        // and we need d
-        let d = -(n.x * A.x + n.y * A.y + n.z * A.z);
-    
-        // Check if below the plane
-        let cy = -(this.pos.x*n.x + this.pos.z*n.z + d) / n.y;
-        //if(this.speed.y < 0.0 &&
-         //   this.pos.y > cy-UP_FRAME * ev.step && 
-         //   this.pos.y < cy+(this.speed.y+BOTTOM_FRAME) * v.step ) {
-    
-           // this.speed.y = 0.0;
-        this.pos.y = cy;
-
-        //}
+    // Set orientation
+    setOrientation(cy, n, d) {
 
         // Generate basis for rotation
         this.up = new Vector3(-n.x, -n.y, -n.z);
@@ -222,9 +196,6 @@ export class Racer {
         this.left = new Vector3(
             this.leftDir.x, dy-cy, this.leftDir.z);
         this.left.normalize();
-
-  
-        return true;
     }
 
 }
