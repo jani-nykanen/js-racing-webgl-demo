@@ -55,6 +55,7 @@ export class Game {
         }
 
         this.cam.followRacer(this.racers[0]);
+        this.cam.updateAnimation(ev);
         this.stage.getCollisions(this.cam);
         
     }

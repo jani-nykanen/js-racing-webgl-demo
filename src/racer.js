@@ -1,6 +1,6 @@
 import { Vector3 } from "./vector.js";
 import { State } from "./input.js";
-import { negMod, isInsideTriangle, cross } from "./util.js";
+import { negMod, isInsideTriangle, cross, dot, updateSpeedAxis, updateVectorMovement } from "./util.js";
 import { Collider } from "./collider.js";
 
 //
@@ -23,6 +23,11 @@ export class Racer extends Collider {
         this.left = new Vector3(-1, 0, 0);
         this.up = new Vector3(0, 1, 0);
 
+        // Pose vectors
+        this.poseUp = this.up.clone();
+        this.poseFront = this.front.clone();
+        this.poseLeft = this.left.clone();
+
         // These will be used to compute the left & front vectors
         this.frontDir = new Vector3(0, 0, 1);
         this.leftDir = new Vector3(-1, 0, 0);
@@ -42,23 +47,6 @@ export class Racer extends Collider {
         this.front.normalize();
         this.left.normalize();
         this.up.normalize();
-    }
-
-
-    // A helper function that updates a 
-    // "speed axis", like actual speed or
-    // angle speed
-    updateSpeedAxis(speed, target, d) {
-
-        if (speed < target) {
-
-            speed = Math.min(speed + d, target);
-        }
-        else if (speed > target) {
-
-            speed = Math.max(speed - d, target);
-        }
-        return speed;
     }
 
 
@@ -111,20 +99,21 @@ export class Racer extends Collider {
         const MOVE_DELTA = 0.01;
         const ANGLE_DELTA = 0.005;
         const GRAVITY_DELTA = 0.025;
+        const VECTOR_DIV = 10;
 
         // Update speed axes
-        this.speed.x = this.updateSpeedAxis(
+        this.speed.x = updateSpeedAxis(
             this.speed.x, this.target.x, 
             MOVE_DELTA * ev.step);
-        this.speed.z = this.updateSpeedAxis(
+        this.speed.z = updateSpeedAxis(
             this.speed.z, this.target.z, 
             MOVE_DELTA * ev.step);
-        this.speed.y = this.updateSpeedAxis(
+        this.speed.y = updateSpeedAxis(
             this.speed.y, this.target.y, 
             GRAVITY_DELTA * ev.step);
 
         // Update rotation speed
-        this.angleSpeed  = this.updateSpeedAxis(
+        this.angleSpeed  = updateSpeedAxis(
             this.angleSpeed, 
             this.angleTarget, 
             ANGLE_DELTA * ev.step);
@@ -137,6 +126,11 @@ export class Racer extends Collider {
         // Update angle
         this.angle += this.angleSpeed * ev.step;
         this.angle = negMod(this.angle, Math.PI*2);
+
+        // Update pose vectors
+        updateVectorMovement(this.poseFront, this.front, VECTOR_DIV, ev.step);
+        updateVectorMovement(this.poseLeft, this.left, VECTOR_DIV, ev.step);
+        updateVectorMovement(this.poseUp, this.up, VECTOR_DIV, ev.step);
 
         // Update front & left vectors
         this.frontDir.x = Math.cos(this.angle);
@@ -167,7 +161,7 @@ export class Racer extends Collider {
         c.push();
         c.translate(this.pos.x, this.pos.y + 2.0, this.pos.z);
         //c.rotate(Math.PI/2, 0, 1, 0);
-        c.setBasis(this.left, this.up, this.front);
+        c.setBasis(this.poseLeft, this.poseUp, this.poseFront);
         c.useTransform();
 
         c.setColor();
@@ -193,9 +187,9 @@ export class Racer extends Collider {
         dy = -( (this.pos.x+this.leftDir.x)*n.x + 
                     (this.pos.z+this.leftDir.z)*n.z + d) 
                     / n.y;
-        this.left = new Vector3(
-            this.leftDir.x, dy-cy, this.leftDir.z);
+        this.left = cross(this.front, this.up);
         this.left.normalize();
+
     }
 
 }

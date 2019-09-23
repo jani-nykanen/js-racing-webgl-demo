@@ -71,11 +71,45 @@ export function isInsideTriangle(
 
 
 // Cross-product
-export function cross(v1, v2) {
+export function cross(a, b) {
 
     return new Vector3(
-        v1.y*v2.z - v2.y*v1.z,
-        v1.x*v2.z - v2.x*v1.z,
-        v1.x*v2.y - v2.x*v1.y
+        a.y*b.z - b.y*a.z,
+        a.z*b.x - b.z*a.x,
+        a.x*b.y - b.x*a.y
     );
+}
+
+// Dot product
+export function dot(a, b) {
+
+    return a.x*b.x + a.y*b.y + a.z*b.z;
+}
+
+
+// A helper function that updates a 
+// "speed axis", like actual speed or
+// angle speed
+export function updateSpeedAxis(speed, target, d) {
+
+    if (speed < target) {
+
+         speed = Math.min(speed + d, target);
+    }
+    else if (speed > target) {
+
+        speed = Math.max(speed - d, target);
+    }
+    return speed;
+}
+
+
+// Update a vector with a target vector
+export function updateVectorMovement(v, t, div, s) {
+
+    v.x = updateSpeedAxis(v.x, t.x, Math.abs(v.x-t.x)/div *s);
+    v.y = updateSpeedAxis(v.y, t.y, Math.abs(v.y-t.y)/div *s);
+    v.z = updateSpeedAxis(v.z, t.z, Math.abs(v.z-t.z)/div *s);
+
+    v.normalize();
 }
