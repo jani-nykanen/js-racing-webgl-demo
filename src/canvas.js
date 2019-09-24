@@ -24,10 +24,16 @@ export class Canvas extends Transformations {
         this.canvas = null;
         this.gl = null;
 
+        this.crtCanvas = null;
+        this.crtCtx = null;
+        this.scanlines = null;
+        this.flickerTimer = 0.0;
+
         // Just for laziness we store them here
         this.w = w;
         this.h = h;
 
+        this.cdiv = null;
         this.createHtml5Canvas(w, h);
         this.initGL(this.gl);
 
@@ -47,6 +53,12 @@ export class Canvas extends Transformations {
         // reduce WebGL calls
         this.boundMesh = null;
         this.boundTex = null;
+
+        // Initialize CRT canvas
+        this.initCRTEffect();
+
+        // Set the proper size for the canvases (style-wise)
+        this.resize(window.innerWidth, window.innerHeight);
     }
 
 
@@ -99,8 +111,8 @@ export class Canvas extends Transformations {
     // it's embedded)
     createHtml5Canvas(w, h) {
 
-        let cdiv = document.createElement("div");
-        cdiv.setAttribute("style", 
+        this.cdiv = document.createElement("div");
+        this.cdiv.setAttribute("style", 
             "position: absolute; top: 0; left: 0; z-index: -1");
 
         this.canvas = document.createElement("canvas");
@@ -114,17 +126,86 @@ export class Canvas extends Transformations {
             "image-rendering: pixelated;" +
             "image-rendering: -moz-crisp-edges;"
             );
-        cdiv.appendChild(this.canvas);
-        document.body.appendChild(cdiv);
-
-        // Set the proper size (style-wise)
-        this.resize(window.innerWidth, window.innerHeight);
+        this.cdiv.appendChild(this.canvas);
+        document.body.appendChild(this.cdiv);
 
         // Get OpenGL context
         // (We disable antialias to make it look more
         // pixelated!)
         this.gl = this.canvas.getContext("webgl", 
             {alpha:false, antialias: false});
+    }
+
+
+    // Initialize the CRT effect
+    initCRTEffect() {
+
+        this.crtCanvas = document.createElement("canvas");
+        this.crtCanvas.width = this.w;
+        this.crtCanvas.height = this.h;
+
+        this.cdiv.appendChild(this.crtCanvas);
+        this.crtCanvas.setAttribute("style",
+            "position: absolute; top: 0; left: 0; z-index: 1;");
+
+        this.crtCtx = this.crtCanvas.getContext("2d");
+
+        // Load scanline effect image
+        this.scanlines = new Image();
+        this.scanlines.onload = () => {
+
+            this.scanlines.loaded = true;
+        }
+        this.scanlines.src = "assets/bitmaps/crt.png";
+    }
+
+
+    // Update scanlines flickering
+    updateScanlines(step) {
+
+        const FLICKER_SPEED = 0.05;
+
+        // Update flicker
+        this.flickerTimer = 
+            (this.flickerTimer + FLICKER_SPEED*step) % 
+            (Math.PI*2);
+    }
+
+
+    // Refresh the CRT effect
+    refreshCRT() {
+
+        const FLICKER_BASE = 0.275;
+        const FLICKER_RANGE = 0.025;
+
+        let c = this.crtCtx;
+
+        // Clear canvas
+        c.globalAlpha = 1;
+        c.clearRect(0, 0, 
+            this.crtCanvas.width, 
+            this.crtCanvas.height);
+
+        // Draw scanlines
+        if (this.scanlines.loaded)  {
+
+            c.globalAlpha = Math.sin(this.flickerTimer) * 
+                FLICKER_RANGE + FLICKER_BASE;
+            c.drawImage(
+                this.scanlines, 0, 0,
+                this.crtCanvas.width,
+                this.crtCanvas.height);
+        }
+
+        // Draw black outlines
+        let r = 1.0 / 8.0 * this.crtCanvas.height;
+        c.strokeStyle = "black";
+        c.globalAlpha = 1;
+        this.roundRect(
+            -r/4, -r/4, 
+            this.crtCanvas.width+r/2, 
+            this.crtCanvas.height+r/2, 
+            r, r/2);
     }
 
 
@@ -150,6 +231,20 @@ export class Canvas extends Transformations {
     }
 
 
+    // Resize a canvas
+    resizeCanvas(c, x, y, width, height) {
+
+        let top = String(y | 0) + "px";
+        let left = String(x | 0) + "px";
+        if (width != null)
+            c.style.height = String(height | 0) + "px";
+        if (height != null)
+            c.style.width = String(width | 0) + "px";
+        c.style.top = top;
+        c.style.left = left;
+    }
+
+
     // Called when the window is resized (and in the creation)
     resize(w, h) {
 
@@ -169,14 +264,37 @@ export class Canvas extends Transformations {
         x = w/2 - width/2;
         y = h/2 - height/2;
         
-        // Set style properties
-        let top = String(y | 0) + "px";
-        let left = String(x | 0) + "px";
-        c.style.height = String(height | 0) + "px";
-        c.style.width = String(width | 0) + "px";
-        c.style.top = top;
-        c.style.left = left;
+        this.resizeCanvas(c, x, y, width, height);
+        this.resizeCanvas(this.crtCanvas, x, y);
+
+        this.crtCanvas.width = width;
+        this.crtCanvas.height = height;
     }
+
+
+    // Draw a rect with round corners in Html5 context
+    roundRect(x, y, w, h, radius, lineWidth) {
+
+        let c = this.crtCtx;
+      
+        let r = x + w;
+        let b = y + h;
+      
+        c.lineWidth = String(lineWidth);
+        c.beginPath();
+        
+        c.moveTo(x+radius, y);
+        c.lineTo(r-radius, y);
+        c.quadraticCurveTo(r, y, r, y+radius);
+        c.lineTo(r, y+h-radius);
+        c.quadraticCurveTo(r, b, r-radius, b);
+        c.lineTo(x+radius, b);
+        c.quadraticCurveTo(x, b, x, b-radius);
+        c.lineTo(x, y+radius);
+        c.quadraticCurveTo(x, y, x+radius, y);
+      
+        c.stroke();
+      }
 
 
     // Bind a mesh, if not already bound

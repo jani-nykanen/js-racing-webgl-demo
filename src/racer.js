@@ -63,7 +63,7 @@ export class Racer extends Collider {
 
         const ANGLE_TARGET = 0.033;
         const MOVE_SPEED = 1.0;
-        const FRICTION = 0.50;
+        const FRICTION = MOVE_SPEED / 2;
         const BASE_GRAVITY = -1.0;
         const JUMP_SPEED = 0.75;
 
@@ -101,9 +101,9 @@ export class Racer extends Collider {
         if (this.canJump &&
             s == State.Pressed) {
 
-            this.speed.x = (this.up.x+dx);
+            this.speed.x = this.up.x + dx;
             this.speed.y = this.up.y;
-            this.speed.z = (this.up.z+dz);
+            this.speed.z = this.up.z + dz;
 
             this.speed.normalize();
             this.speed.scalarMul(JUMP_SPEED);
@@ -116,16 +116,16 @@ export class Racer extends Collider {
         }
 
         // Compute target position
-        this.target.x = dx * 
-            MOVE_SPEED;
-        this.target.z = moveDir * 
-            Math.cos(this.angle) * 
-            MOVE_SPEED;
-        this.target.y = BASE_GRAVITY;
+        if (this.canJump) {
 
-        // Apply friction
-        this.target.x += this.up.x * FRICTION;
-        this.target.z += this.up.z * FRICTION;
+            this.target.x = dx * MOVE_SPEED;
+            this.target.z = dz * MOVE_SPEED;
+
+            // Apply friction
+            this.target.x += this.up.x * FRICTION;
+            this.target.z += this.up.z * FRICTION;
+        }
+        this.target.y = BASE_GRAVITY;  
 
         // We ignore y axis because it makes
         // camera go wonky

@@ -25,6 +25,7 @@ window.onload = () => {
         {name: "donkey", src: "assets/bitmaps/donkey.png"},
         {name: "surface", src: "assets/bitmaps/surface.png", preserve: true},
         {name: "snow", src: "assets/bitmaps/snow.png"},
+        {name: "vcr", src: "assets/bitmaps/vcr.png"},
     );
     c.assets.addMeshes(
         {name: "cube",   src: "assets/models/cube.obj"},

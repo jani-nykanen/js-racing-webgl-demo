@@ -26,6 +26,9 @@ export class Camera extends Collider {
         this.height = 1.0;
         this.dist = 10;
         this.distTarget = this.dist;
+
+        // To get collisions working properly
+        this.speed.y = -1;
     }
 
 

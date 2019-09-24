@@ -32,6 +32,8 @@ export class Game {
         this.angle = new Vector3();
 
         this.cam = new Camera();
+
+        this.dateFlickerTimer = 0;
     }
 
 
@@ -47,6 +49,8 @@ export class Game {
     // Update the scene
     update(ev) {
 
+        const DATE_FLICKER_SPEED = 1.0/120.0;
+
         // Update racers
         for (let r of this.racers) {
 
@@ -57,7 +61,34 @@ export class Game {
         this.cam.followRacer(this.racers[0]);
         this.cam.updateAnimation(ev);
         this.stage.getCollisions(this.cam);
+
+        // Update timers
+        this.dateFlickerTimer =
+            (this.dateFlickerTimer + 
+            DATE_FLICKER_SPEED*ev.step) % 1.0;
         
+    }
+
+
+    // Draw VCR-styled text
+    drawVCRText(c) {
+
+        // Get date & time
+        let date = new Date();
+        let dateStr = String(date.getMonth() +1).padStart(2, '0') + "/" +
+            String(date.getDate()).padStart(2, '0') + "/" +
+            date.getFullYear().toString().substr(2, 2); 
+        let timeStr = String(date.getHours()) + 
+            (this.dateFlickerTimer < 0.5 ? ":" : " ") + 
+            String(date.getMinutes()).padStart(2, "0");
+
+        c.setColor(1);
+        c.drawText(c.textures.vcr, timeStr, 4, c.h - 48, -18, 0, false);
+        c.drawText(c.textures.vcr, dateStr, 4, c.h - 28, -18, 0, false);
+
+        c.drawText(c.textures.vcr, 
+            "PLAY" + String.fromCharCode(1)
+            , -2, 2, -18, 0, false);
     }
 
 
@@ -96,13 +127,7 @@ export class Game {
         c.setView2D(c.w, c.h);
         c.useTransform();
 
-        c.setColor(0);
-        c.drawText(c.textures.font, "USE ARROW KEYS.\nFOR FUN.",
-            3, 3, -1, 0);
-
-        c.setColor(1);
-        c.drawText(c.textures.font, "USE ARROW KEYS.\nFOR FUN.",
-            2, 2, -1, 0);
+        this.drawVCRText(c);
     }
 
 }
