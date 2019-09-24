@@ -33,8 +33,8 @@ export class Camera extends Collider {
     followRacer(o) {
 
         const UP_DIST = 8;
-        const DIST_MIN = 10.0;
-        const DIST_MUL = 16.0;
+        const DIST_MIN = 8.0;
+        const DIST_MUL = 8.0;
 
         this.lookAt = o.pos.clone();
         this.target = o.poseLeft.clone();
@@ -74,7 +74,7 @@ export class Camera extends Collider {
         c.setCamera(
             this.pos.x, this.pos.y, this.pos.z,
             this.lookAt.x, 
-            this.lookAt.y, 
+            this.lookAt.y + 2, 
             this.lookAt.z);
     }
 }

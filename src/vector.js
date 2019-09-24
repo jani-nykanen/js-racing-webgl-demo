@@ -58,6 +58,15 @@ export class Vector3 {
     }
 
 
+    // Multiply with a scalar
+    scalarMul(a) {
+
+        this.x *= a;
+        this.y *= a;
+        this.z *= a;
+    }
+
+
     // Return a (deep?) copy of the vector
     clone() { return new Vector3(this.x, this.y, this.z); }
     

@@ -61,10 +61,11 @@ export class Racer extends Collider {
     // Control manually
     control(ev) {
 
-        const ANGLE_TARGET = 0.05;
-        const MOVE_SPEED = 0.25;
+        const ANGLE_TARGET = 0.033;
+        const MOVE_SPEED = 1.0;
+        const FRICTION = 0.50;
         const BASE_GRAVITY = -1.0;
-        const JUMP_SPEED = 1.0;
+        const JUMP_SPEED = 0.75;
 
         let angleDir = 0;
         let moveDir = 0;
@@ -79,6 +80,7 @@ export class Racer extends Collider {
             angleDir = -1;
         }
         // Compute angle speed target
+        angleDir *= 1.0 + Math.hypot(this.speed.x, this.speed.z);
         this.angleTarget = ANGLE_TARGET * angleDir;
 
         // Move forward/backward
@@ -91,14 +93,20 @@ export class Racer extends Collider {
             moveDir = -1;
         }
 
+        let dx = moveDir * Math.sin(this.angle);
+        let dz = moveDir * Math.cos(this.angle)
+
         // Jump
         let s = ev.input.action.fire1.state;
         if (this.canJump &&
             s == State.Pressed) {
 
-            this.speed.x += this.up.x * JUMP_SPEED;
-            this.speed.y += this.up.y * JUMP_SPEED;
-            this.speed.z += this.up.z * JUMP_SPEED;
+            this.speed.x = (this.up.x+dx);
+            this.speed.y = this.up.y;
+            this.speed.z = (this.up.z+dz);
+
+            this.speed.normalize();
+            this.speed.scalarMul(JUMP_SPEED);
         }
 
         if (!this.canJump && this.speed.y > 0.0 &&
@@ -108,13 +116,20 @@ export class Racer extends Collider {
         }
 
         // Compute target position
-        this.target.x = moveDir * 
-            Math.sin(this.angle) * 
+        this.target.x = dx * 
             MOVE_SPEED;
         this.target.z = moveDir * 
             Math.cos(this.angle) * 
             MOVE_SPEED;
         this.target.y = BASE_GRAVITY;
+
+        // Apply friction
+        this.target.x += this.up.x * FRICTION;
+        this.target.z += this.up.z * FRICTION;
+
+        // We ignore y axis because it makes
+        // camera go wonky
+        this.targetLen = Math.hypot(this.target.x, this.target.z);
     }
 
 
@@ -126,13 +141,17 @@ export class Racer extends Collider {
         const GRAVITY_DELTA = 0.025;
         const VECTOR_DIV = 10;
 
+        // Compute acceleration
+        let s = Math.hypot(this.speed.x, this.speed.z);
+        let acc = MOVE_DELTA * 1.0 / Math.sqrt(Math.exp(s));
+
         // Update speed axes
         this.speed.x = updateSpeedAxis(
             this.speed.x, this.target.x, 
-            MOVE_DELTA * ev.step);
+            acc * ev.step);
         this.speed.z = updateSpeedAxis(
             this.speed.z, this.target.z, 
-            MOVE_DELTA * ev.step);
+            acc * ev.step);
         this.speed.y = updateSpeedAxis(
             this.speed.y, this.target.y, 
             GRAVITY_DELTA * ev.step);
@@ -168,10 +187,6 @@ export class Racer extends Collider {
         this.left = this.leftDir.clone();
         this.front = this.frontDir.clone();
         this.up = new Vector3(0, 1, 0);
-
-        // We ignore y axis because it makes
-        // camera go wonky
-        this.targetLen = Math.hypot(this.target.x, this.target.z);
     }
 
 
@@ -203,7 +218,7 @@ export class Racer extends Collider {
 
 
     // Set orientation
-    setOrientation(cy, n, d) {
+    setOrientation(cy, n, d, dist) {
 
         // Generate basis for rotation
         this.up = new Vector3(-n.x, -n.y, -n.z);
@@ -222,6 +237,15 @@ export class Racer extends Collider {
         this.left.normalize();
 
         this.canJump = true;
+
+        dist = Math.abs(dist);
+
+        // Update position
+        //this.pos.x -= n.x * dist;
+        //this.pos.y -= n.y * dist;
+        //this.pos.z -= n.z * dist;
+
+        this.pos.y = cy;
 
     }
 

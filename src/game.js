@@ -40,7 +40,7 @@ export class Game {
     init(ev, c) {
 
         // Create stage
-        this.stage = new Stage(ev, c, 256.0, 32.0, 256.0);
+        this.stage = new Stage(ev, c, 512.0, 48.0, 512.0);
     }
 
 

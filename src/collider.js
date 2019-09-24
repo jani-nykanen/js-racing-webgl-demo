@@ -25,7 +25,7 @@ export class Collider {
     planeCollision(A, B, C) {
 
         const EPS = 0.0001;
-        const TOP_OFF = 0.25;
+        const TOP_OFF = 0.01;
 
         // Check if inside the collision triangle
         if(!isInsideTriangle(this.pos.x, this.pos.z,
@@ -43,20 +43,27 @@ export class Collider {
         
         n.normalize();
    
-
         // Interpret: Plane equation, where n = (a,b,c),
         // and we need d
         let d = -(n.x * A.x + n.y * A.y + n.z * A.z);
+        let dn = Math.sqrt(n.x*n.x + n.y*n.y + n.z*n.z);
+        let dist = Math.abs(n.x * this.pos.x + n.y * this.pos.y + n.z * this.pos.z + d) / dn;
     
         // Check if below the plane
         let cy = -(this.pos.x*n.x + this.pos.z*n.z + d) / n.y;
         if(this.pos.y-this.height < cy + TOP_OFF) {
     
-            this.speed.y = 0.0;
-            this.pos.y = cy + this.height;
+            // this.speed.y = 0.0;
+            // this.pos.y = cy + this.height;
 
-            if (typeof(this.setOrientation) == "function")
-            this.setOrientation(cy, n, d);
+            if (typeof(this.setOrientation) == "function") {
+
+                this.setOrientation(cy, n, d, dist);
+            }
+            else {
+
+                this.pos.y = cy + this.height;
+            }
         }
 
         
