@@ -18,6 +18,8 @@ export class Racer extends Collider {
         
         super(x, y, z);
 
+        this.targetLen = 0;
+
         // Directorial vectors
         this.front = new Vector3(0, 0, 1);
         this.left = new Vector3(-1, 0, 0);
@@ -31,12 +33,18 @@ export class Racer extends Collider {
         // These will be used to compute the left & front vectors
         this.frontDir = new Vector3(0, 0, 1);
         this.leftDir = new Vector3(-1, 0, 0);
-
+        
+        // Angle stuff
         this.angle = 0;
         this.angleSpeed = 0;
         this.angleTarget = 0;
 
         this.ai = ai;
+
+        // Jumping variables
+        this.jumpTimer = 0.0;
+        this.jumpDir = new Vector3();
+        this.canJump = false;
     }
 
 
@@ -55,7 +63,8 @@ export class Racer extends Collider {
 
         const ANGLE_TARGET = 0.05;
         const MOVE_SPEED = 0.25;
-        const BASE_GRAVITY = -0.5;
+        const BASE_GRAVITY = -1.0;
+        const JUMP_SPEED = 1.0;
 
         let angleDir = 0;
         let moveDir = 0;
@@ -80,6 +89,22 @@ export class Racer extends Collider {
         else if (ev.input.action.down.state == State.Down) {
 
             moveDir = -1;
+        }
+
+        // Jump
+        let s = ev.input.action.fire1.state;
+        if (this.canJump &&
+            s == State.Pressed) {
+
+            this.speed.x += this.up.x * JUMP_SPEED;
+            this.speed.y += this.up.y * JUMP_SPEED;
+            this.speed.z += this.up.z * JUMP_SPEED;
+        }
+
+        if (!this.canJump && this.speed.y > 0.0 &&
+            s == State.Released) {
+
+            this.speed.y /= 2;
         }
 
         // Compute target position
@@ -143,6 +168,10 @@ export class Racer extends Collider {
         this.left = this.leftDir.clone();
         this.front = this.frontDir.clone();
         this.up = new Vector3(0, 1, 0);
+
+        // We ignore y axis because it makes
+        // camera go wonky
+        this.targetLen = Math.hypot(this.target.x, this.target.z);
     }
 
 
@@ -152,6 +181,8 @@ export class Racer extends Collider {
         if (!this.ai)
             this.control(ev);
         this.move(ev);
+
+        this.canJump = false;
     }
 
 
@@ -189,6 +220,8 @@ export class Racer extends Collider {
                     / n.y;
         this.left = cross(this.front, this.up);
         this.left.normalize();
+
+        this.canJump = true;
 
     }
 
