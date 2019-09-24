@@ -40,7 +40,7 @@ export class Game {
     init(ev, c) {
 
         // Create stage
-        this.stage = new Stage(ev, c, 64.0, 32.0, 64.0);
+        this.stage = new Stage(ev, c, 256.0, 32.0, 256.0);
     }
 
 
@@ -64,7 +64,7 @@ export class Game {
     // (Re)draw the scene
     draw(c) {
 
-        c.clear(0.70, 0.70, 0.70);
+        c.clear(0);
 
         // Start 3D rendering
         c.toggleDepthTest(true);
@@ -78,8 +78,8 @@ export class Game {
         // Set light & fog
         c.toggleFogAndLighting(true);
         //c.setLighting(0.75, 0, -1.0 / Math.sqrt(2), 1.0 / Math.sqrt(2));
-        c.setLighting(0.75, this.cam.dir.x, this.cam.dir.y, this.cam.dir.z);
-        c.setFog(0.035, 0, 0, 0);
+        c.setLighting(0.625, this.cam.dir.x, this.cam.dir.y, this.cam.dir.z);
+        c.setFog(0.020, 0, 0, 0);
 
         // Draw stage
         this.stage.draw(c);
