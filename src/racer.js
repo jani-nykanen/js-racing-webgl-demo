@@ -45,6 +45,9 @@ export class Racer extends Collider {
         this.jumpTimer = 0.0;
         this.jumpDir = new Vector3();
         this.canJump = false;
+
+        this.moveDir = 0;
+        this.acc = 0.0;
     }
 
 
@@ -62,13 +65,13 @@ export class Racer extends Collider {
     control(ev) {
 
         const ANGLE_TARGET = 0.033;
-        const MOVE_SPEED = 1.0;
-        const FRICTION = MOVE_SPEED / 2;
+        const FORWARD_SPEED = 1.0;
+        const BACKWARD_SPEED = 0.20;
         const BASE_GRAVITY = -1.0;
-        const JUMP_SPEED = 0.75;
+        const JUMP_TIME = 15;
 
         let angleDir = 0;
-        let moveDir = 0;
+        
 
         // Check rotation
         if (ev.input.action.left.state == State.Down) {
@@ -84,46 +87,48 @@ export class Racer extends Collider {
         this.angleTarget = ANGLE_TARGET * angleDir;
 
         // Move forward/backward
+        let speed = FORWARD_SPEED;
+        this.moveDir = 0;
         if (ev.input.action.up.state == State.Down) {
 
-            moveDir = 1;
+            this.moveDir = 1;
         }
         else if (ev.input.action.down.state == State.Down) {
 
-            moveDir = -1;
+            this.moveDir = -1;
+            speed = BACKWARD_SPEED;
         }
 
-        let dx = moveDir * Math.sin(this.angle);
-        let dz = moveDir * Math.cos(this.angle)
+        let dx = this.moveDir * Math.sin(this.angle);
+        let dz = this.moveDir * Math.cos(this.angle)
 
         // Jump
         let s = ev.input.action.fire1.state;
         if (this.canJump &&
             s == State.Pressed) {
 
-            this.speed.x = this.up.x + dx;
-            this.speed.y = this.up.y;
-            this.speed.z = this.up.z + dz;
+            this.jumpDir.x = this.up.x + dx;
+            this.jumpDir.y = this.up.y;
+            this.jumpDir.z = this.up.z + dz;
+            this.jumpDir.normalize();
 
-            this.speed.normalize();
-            this.speed.scalarMul(JUMP_SPEED);
+            this.jumpTimer = JUMP_TIME;
         }
 
-        if (!this.canJump && this.speed.y > 0.0 &&
+        if (this.jumpTimer > 0.0 &&
             s == State.Released) {
 
-            this.speed.y /= 2;
+            this.jumpTimer = 0.0;
         }
-
-        // Compute target position
+        
         if (this.canJump) {
 
-            this.target.x = dx * MOVE_SPEED;
-            this.target.z = dz * MOVE_SPEED;
+            this.target.x = dx * speed;
+            this.target.z = dz * speed;
 
             // Apply friction
-            this.target.x += this.up.x * FRICTION;
-            this.target.z += this.up.z * FRICTION;
+            this.target.x += this.up.x * (speed/2);
+            this.target.z += this.up.z * (speed/2);
         }
         this.target.y = BASE_GRAVITY;  
 
@@ -140,18 +145,46 @@ export class Racer extends Collider {
         const ANGLE_DELTA = 0.005;
         const GRAVITY_DELTA = 0.025;
         const VECTOR_DIV = 10;
+        const JUMP_SPEED = 0.75;
+        const EPS = 0.0001;
+        const BRAKE_SPEED = MOVE_DELTA;
+        const BACKWARD_ACC = 1.0;
 
         // Compute acceleration
         let s = Math.hypot(this.speed.x, this.speed.z);
-        let acc = MOVE_DELTA * 1.0 / Math.sqrt(Math.exp(s));
+        if (this.canJump) {
+
+            this.acc = MOVE_DELTA * 1.0 / Math.sqrt(Math.exp(s));
+            if (this.moveDir == -1) {
+
+                this.acc = BRAKE_SPEED * 2;
+
+                // Stop braking and start moving backwards
+                if((Math.abs(this.target.x) < EPS || 
+                    this.speed.x/this.target.x >= 0) &&
+                    (Math.abs(this.target.y) < EPS || 
+                    this.speed.z/this.target.z >= 0)) {
+
+                    this.acc = BACKWARD_ACC;
+                }
+            }
+        }
+
+        // Update jumping
+        if (this.jumpTimer > 0.0) {
+
+            this.jumpTimer -= ev.step;
+            this.speed = this.jumpDir.clone();
+            this.speed.scalarMul(JUMP_SPEED);
+        }
 
         // Update speed axes
         this.speed.x = updateSpeedAxis(
             this.speed.x, this.target.x, 
-            acc * ev.step);
+            this.acc * ev.step);
         this.speed.z = updateSpeedAxis(
             this.speed.z, this.target.z, 
-            acc * ev.step);
+            this.acc * ev.step);
         this.speed.y = updateSpeedAxis(
             this.speed.y, this.target.y, 
             GRAVITY_DELTA * ev.step);
