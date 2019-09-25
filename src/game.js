@@ -18,6 +18,17 @@ export class Game {
 
     constructor() {
 
+        this.racers = [];
+        this.angle = 0;
+        this.cam = null;
+
+        this.reset();
+    }
+
+
+    // Reset game scene
+    reset() {
+
         const RACER_COUNT = 1;
 
         // Create racers (the racer in index 0 is
@@ -32,8 +43,6 @@ export class Game {
         this.angle = new Vector3();
 
         this.cam = new Camera();
-
-        this.dateFlickerTimer = 0;
     }
 
 
@@ -49,7 +58,7 @@ export class Game {
     // Update the scene
     update(ev) {
 
-        const DATE_FLICKER_SPEED = 1.0/120.0;
+        const RESET_Y = -24.0;
 
         // Update racers
         for (let r of this.racers) {
@@ -62,10 +71,8 @@ export class Game {
         this.cam.updateAnimation(ev);
         this.stage.getCollisions(this.cam);
 
-        // Update timers
-        this.dateFlickerTimer =
-            (this.dateFlickerTimer + 
-            DATE_FLICKER_SPEED*ev.step) % 1.0;
+        if (this.racers[0].pos.y < RESET_Y)
+            this.reset();
         
     }
 
@@ -104,6 +111,12 @@ export class Game {
         c.toggleFogAndLighting(false);
         c.setView2D(c.w, c.h);
         c.useTransform();
+
+        // Draw guide
+        c.setColor(1);
+        c.drawText(c.textures.font, 
+            "USE ARROW KEYS TO MOVE,\nSPACE TO JUMP.", 
+            2, 2, 0, 2);
     }
 
 }

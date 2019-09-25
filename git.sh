@@ -5,3 +5,5 @@ git add index.html
 git add lib
 git add assets
 git add dev
+git add dist
+git add tools

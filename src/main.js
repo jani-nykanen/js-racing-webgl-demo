@@ -27,7 +27,6 @@ window.onload = () => {
         {name: "shadow", src: "assets/bitmaps/shadow.png"},
     );
     c.assets.addMeshes(
-        {name: "cube",   src: "assets/models/cube.obj"},
         {name: "horse",  src: "assets/models/horse.obj"},
     );
 

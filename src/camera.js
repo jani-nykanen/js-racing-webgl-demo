@@ -75,11 +75,12 @@ export class Camera extends Collider {
     use(c) {
 
         const UP_OFF = 3;
+        const MIN_Y = 0.0;
 
         c.setCamera(
             this.pos.x, this.pos.y, this.pos.z,
             this.lookAt.x, 
-            this.lookAt.y + UP_OFF, 
+            Math.max(MIN_Y, this.lookAt.y) + UP_OFF, 
             this.lookAt.z);
     }
 }
