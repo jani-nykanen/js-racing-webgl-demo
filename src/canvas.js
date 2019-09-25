@@ -24,11 +24,6 @@ export class Canvas extends Transformations {
         this.canvas = null;
         this.gl = null;
 
-        this.crtCanvas = null;
-        this.crtCtx = null;
-        this.scanlines = null;
-        this.flickerTimer = 0.0;
-
         // Just for laziness we store them here
         this.w = w;
         this.h = h;
@@ -48,14 +43,13 @@ export class Canvas extends Transformations {
         this.prevShader = this.activeShader;
 
         this.mRect = this.createRectMesh();
+        this.mRectXZ = this.createRectMeshXZ();
 
         // Store previously bounded objects to
         // reduce WebGL calls
         this.boundMesh = null;
         this.boundTex = null;
 
-        // Initialize CRT canvas
-        this.initCRTEffect();
 
         // Set the proper size for the canvases (style-wise)
         this.resize(window.innerWidth, window.innerHeight);
@@ -72,6 +66,34 @@ export class Canvas extends Transformations {
              1, 0, 0,
              1, 1, 0,
              0, 1, 0
+            ],
+            [0, 0,
+             1, 0,
+             1, 1,
+             0, 1
+            ],
+            [0, 0, 1,
+             0, 0, 1,
+             0, 0, 1,
+             0, 0, 1
+            ],
+            [0, 1, 2, 
+             2, 3, 0
+            ],
+        );
+    }
+
+
+    // Create a rectangular mesh in XZ plane
+    // (TODO: Shape generator for these!)
+    createRectMeshXZ() {
+
+        return new Mesh(
+            this.gl,
+            [-0.5, 0, -0.5,
+            0.5, 0, -0.5,
+             0.5, 0, 0.5,
+             -0.5, 0, 0.5
             ],
             [0, 0,
              1, 0,
@@ -137,78 +159,6 @@ export class Canvas extends Transformations {
     }
 
 
-    // Initialize the CRT effect
-    initCRTEffect() {
-
-        this.crtCanvas = document.createElement("canvas");
-        this.crtCanvas.width = this.w;
-        this.crtCanvas.height = this.h;
-
-        this.cdiv.appendChild(this.crtCanvas);
-        this.crtCanvas.setAttribute("style",
-            "position: absolute; top: 0; left: 0; z-index: 1;");
-
-        this.crtCtx = this.crtCanvas.getContext("2d");
-
-        // Load scanline effect image
-        this.scanlines = new Image();
-        this.scanlines.onload = () => {
-
-            this.scanlines.loaded = true;
-        }
-        this.scanlines.src = "assets/bitmaps/crt.png";
-    }
-
-
-    // Update scanlines flickering
-    updateScanlines(step) {
-
-        const FLICKER_SPEED = 0.05;
-
-        // Update flicker
-        this.flickerTimer = 
-            (this.flickerTimer + FLICKER_SPEED*step) % 
-            (Math.PI*2);
-    }
-
-
-    // Refresh the CRT effect
-    refreshCRT() {
-
-        const FLICKER_BASE = 0.275;
-        const FLICKER_RANGE = 0.025;
-
-        let c = this.crtCtx;
-
-        // Clear canvas
-        c.globalAlpha = 1;
-        c.clearRect(0, 0, 
-            this.crtCanvas.width, 
-            this.crtCanvas.height);
-
-        // Draw scanlines
-        if (this.scanlines.loaded)  {
-
-            c.globalAlpha = Math.sin(this.flickerTimer) * 
-                FLICKER_RANGE + FLICKER_BASE;
-            c.drawImage(
-                this.scanlines, 0, 0,
-                this.crtCanvas.width,
-                this.crtCanvas.height);
-        }
-
-        // Draw black outlines
-        let r = 1.0 / 8.0 * this.crtCanvas.height;
-        c.strokeStyle = "black";
-        c.globalAlpha = 1;
-        this.roundRect(
-            -r/4, -r/4, 
-            this.crtCanvas.width+r/2, 
-            this.crtCanvas.height+r/2, 
-            r, r/2);
-    }
-
-
     // Initialize some basic OpenGL properties
     initGL(gl) {
 
@@ -265,10 +215,6 @@ export class Canvas extends Transformations {
         y = h/2 - height/2;
         
         this.resizeCanvas(c, x, y, width, height);
-        this.resizeCanvas(this.crtCanvas, x, y);
-
-        this.crtCanvas.width = width;
-        this.crtCanvas.height = height;
     }
 
 

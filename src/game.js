@@ -70,28 +70,6 @@ export class Game {
     }
 
 
-    // Draw VCR-styled text
-    drawVCRText(c) {
-
-        // Get date & time
-        let date = new Date();
-        let dateStr = String(date.getMonth() +1).padStart(2, '0') + "/" +
-            String(date.getDate()).padStart(2, '0') + "/" +
-            date.getFullYear().toString().substr(2, 2); 
-        let timeStr = String(date.getHours()) + 
-            (this.dateFlickerTimer < 0.5 ? ":" : " ") + 
-            String(date.getMinutes()).padStart(2, "0");
-
-        c.setColor(1);
-        c.drawText(c.textures.vcr, timeStr, 4, c.h - 48, -18, 0, false);
-        c.drawText(c.textures.vcr, dateStr, 4, c.h - 28, -18, 0, false);
-
-        c.drawText(c.textures.vcr, 
-            "PLAY" + String.fromCharCode(1)
-            , -2, 2, -18, 0, false);
-    }
-
-
     // (Re)draw the scene
     draw(c) {
 
@@ -126,8 +104,6 @@ export class Game {
         c.toggleFogAndLighting(false);
         c.setView2D(c.w, c.h);
         c.useTransform();
-
-        this.drawVCRText(c);
     }
 
 }

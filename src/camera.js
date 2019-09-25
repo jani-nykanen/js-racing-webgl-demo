@@ -37,7 +37,7 @@ export class Camera extends Collider {
 
         const UP_DIST = 8;
         const DIST_MIN = 8.0;
-        const DIST_MUL = 8.0;
+        const DIST_MUL = 6.0;
 
         this.lookAt = o.pos.clone();
         this.target = o.poseLeft.clone();
@@ -74,10 +74,12 @@ export class Camera extends Collider {
     // Set camera tranformation
     use(c) {
 
+        const UP_OFF = 3;
+
         c.setCamera(
             this.pos.x, this.pos.y, this.pos.z,
             this.lookAt.x, 
-            this.lookAt.y + 2, 
+            this.lookAt.y + UP_OFF, 
             this.lookAt.z);
     }
 }

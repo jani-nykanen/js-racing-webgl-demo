@@ -107,9 +107,6 @@ export class Core {
                 this.ev.update();
             }
 
-            // Update CRT scanlines
-            this.canvas.updateScanlines(this.ev.step);
-
             this.timeSum -= this.target;
             redraw = true;
         }
@@ -121,7 +118,6 @@ export class Core {
                 
                 this.ev.drawScene(this.canvas);
             }
-            this.canvas.refreshCRT();
         }
 
         this.oldTime = ts;

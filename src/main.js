@@ -20,12 +20,11 @@ window.onload = () => {
 
     // Set assets loading
     c.assets.addTextures(
-        {name: "test",   src: "assets/bitmaps/test.png"},
         {name: "font",   src: "assets/bitmaps/font.png"},
         {name: "donkey", src: "assets/bitmaps/donkey.png"},
         {name: "surface", src: "assets/bitmaps/surface.png", preserve: true},
         {name: "snow", src: "assets/bitmaps/snow.png"},
-        {name: "vcr", src: "assets/bitmaps/vcr.png"},
+        {name: "shadow", src: "assets/bitmaps/shadow.png"},
     );
     c.assets.addMeshes(
         {name: "cube",   src: "assets/models/cube.obj"},

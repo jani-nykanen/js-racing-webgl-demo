@@ -16,6 +16,8 @@ export class Collider {
         this.speed = new Vector3();
         this.target = new Vector3();
 
+        this.shadowPos = new Vector3(x, y, z);
+
         this.height = 0;
     }
 
@@ -25,7 +27,7 @@ export class Collider {
     planeCollision(A, B, C) {
 
         const EPS = 0.0001;
-        const TOP_OFF = 0.25;
+        const TOP_OFF = 0.5;
 
         // Check if inside the collision triangle
         if(!isInsideTriangle(this.pos.x, this.pos.z,
@@ -51,6 +53,7 @@ export class Collider {
     
         // Check if below the plane
         let cy = -(this.pos.x*n.x + this.pos.z*n.z + d) / n.y;
+        this.shadowPos.y = cy;
         if(this.pos.y-this.height < cy + TOP_OFF &&
             this.speed.y < 0.0) {
     
@@ -64,6 +67,7 @@ export class Collider {
 
                 this.pos.y = cy + this.height;
             }
+            
         }
 
         

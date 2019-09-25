@@ -187,6 +187,9 @@ export class Racer extends Collider {
         this.left = this.leftDir.clone();
         this.front = this.frontDir.clone();
         this.up = new Vector3(0, 1, 0);
+
+        this.shadowPos.x = this.pos.x;
+        this.shadowPos.y = this.pos.y;
     }
 
 
@@ -201,16 +204,46 @@ export class Racer extends Collider {
     }
 
 
+    // Draw shadow
+    drawShadow(c) {
+
+        const SHADOW_ALPHA = 0.25;
+        const SCALE_MIN = 4;
+        const SCALE_FACTOR = 8;
+
+        let scale = Math.max(0, 
+            SCALE_MIN - (this.pos.y-this.shadowPos.y)/SCALE_FACTOR);
+
+        c.push();
+        c.translate(this.pos.x, this.shadowPos.y, this.pos.z);
+        c.setBasis(this.poseLeft, this.poseUp, this.poseFront);
+        c.scale(scale, 1, scale);
+        c.useTransform();
+
+        c.toggleDepthTest(false);
+
+        c.setColor(0, 0, 0, SHADOW_ALPHA);
+        c.drawMesh(c.mRectXZ, c.textures.shadow);
+
+        c.toggleDepthTest(true);
+
+        c.pop();
+        c.useTransform();
+    }
+
+
     // Draw the racer
     draw(c) {
 
+        this.drawShadow(c);
+
         c.push();
-        c.translate(this.pos.x, this.pos.y + 2.0, this.pos.z);
-        //c.rotate(Math.PI/2, 0, 1, 0);
+        c.translate(this.pos.x, this.pos.y, this.pos.z);
         c.setBasis(this.poseLeft, this.poseUp, this.poseFront);
         c.useTransform();
 
         c.setColor();
+        c.resetCoordinateTransition();
         c.drawMesh(c.meshes.horse, c.textures.donkey);
 
         c.pop();
