@@ -1,5 +1,11 @@
 This is a small WebGL application demonstrating all the terrible things you can do with WebGL & Javascript when you have a little - but not too much - skill and not any idea what to do with your ~~life~~ code.
 
+## Play
+
+[Play here](https://jani-nykanen.github.io/js-racing-webgl-demo/dist/)
+
+(or if your browser supports es6 modules, [here](https://jani-nykanen.github.io/js-racing-webgl-demo/). No difference in the code, although the latter one might be more up-to-date.)
+
 ## "Building"
 
 Closure compiler (version something) is included in this repo, to make the building easier
