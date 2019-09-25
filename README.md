@@ -11,6 +11,7 @@ Run `dist.sh` to build a zip containing the distributable version of the applica
 The following libraries were used
 
 [webgl-obj-loaded](https://github.com/frenchtoast747/webgl-obj-loader)
+
 [glMatrix](http://glmatrix.net)
 
 Thank you for the developers of those libraries.
